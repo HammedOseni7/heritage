@@ -1,0 +1,151 @@
+'use client';
+
+import React from 'react';
+import { Box, Container, Typography, Avatar, Grid, Paper, Chip, LinearProgress, Stack, Button } from '@mui/material';
+import { ShieldCheck, Award, Star, History, Image as ImageIcon, MessageCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useSimulation } from '@/theme/SimulationContext';
+import { useAuth } from '@/theme/AuthContext';
+import CultureCard from '@/components/feed/CultureCard';
+import { useRouter } from 'next/navigation';
+
+export default function ProfilePage() {
+    const { entries, userValidationsGiven } = useSimulation();
+    const { user, logout } = useAuth();
+    const router = useRouter();
+
+    // Derived Gamification Stats
+    const userEntries = entries.filter(e => e.author.name === (user?.username || 'You (Heritage Guardian)'));
+    const totalImpact = userValidationsGiven * 10 + userEntries.length * 50;
+
+    const badges = [
+        { icon: <ShieldCheck size={24} />, name: 'Cultural Spotter', desc: '10+ Validations', unlocked: true },
+        { icon: <Award size={24} />, name: 'Heritage Keeper', desc: 'First Submission', unlocked: userEntries.length > 0 },
+        { icon: <Star size={24} />, name: 'Legacy Guardian', desc: '1000+ Impact Score', unlocked: false }
+    ];
+
+    return (
+        <Box sx={{ bgcolor: 'background.default', minHeight: 'calc(100vh - 72px)', py: 8 }}>
+            <Container maxWidth="lg">
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+                    {/* Sidebar / Identity */}
+                    <Box sx={{ flex: { xs: '1 1 auto', md: '0 0 33%' } }}>
+                        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+                            <Paper sx={{
+                                p: 4, borderRadius: 6,
+                                bgcolor: 'rgba(30, 41, 59, 0.7)',
+                                backdropFilter: 'blur(20px)',
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                textAlign: 'center'
+                            }}>
+                                <Box sx={{ position: 'relative', display: 'inline-block', mb: 3 }}>
+                                    <Avatar src={user?.avatar || "https://i.pravatar.cc/150?u=you"} sx={{ width: 120, height: 120, border: '4px solid #6366f1' }} />
+                                    {badges[0].unlocked && (
+                                        <Box sx={{ position: 'absolute', bottom: 0, right: 0, bgcolor: '#10b981', p: 1, borderRadius: '50%', border: '4px solid #1e293b' }}>
+                                            <ShieldCheck size={20} color="white" />
+                                        </Box>
+                                    )}
+                                </Box>
+                                <Typography variant="h5" sx={{ fontWeight: 900, mb: 0.5 }}>{user?.username || 'You'}</Typography>
+                                <Typography variant="body2" sx={{ color: '#818cf8', fontWeight: 700, mb: 4 }}>Heritage Guardian</Typography>
+
+                                <Box sx={{ textAlign: 'left', mb: 4, p: 3, bgcolor: 'rgba(0,0,0,0.2)', borderRadius: 4 }}>
+                                    <Typography variant="overline" sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 800 }}>Impact Score</Typography>
+                                    <Typography variant="h3" sx={{ fontWeight: 900, color: '#fbbf24', mb: 1 }}>{totalImpact}</Typography>
+                                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>Top 12% globally</Typography>
+                                    <LinearProgress variant="determinate" value={65} sx={{ mt: 2, height: 6, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { bgcolor: '#fbbf24' } }} />
+                                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)', display: 'block', mt: 1, textAlign: 'right' }}>350 to next tier</Typography>
+                                </Box>
+
+                                <Stack spacing={2}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, border: '1px solid rgba(255,255,255,0.05)', borderRadius: 3 }}>
+                                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)' }}>Validations Given</Typography>
+                                        <Typography variant="body2" sx={{ fontWeight: 800 }}>{userValidationsGiven}</Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, border: '1px solid rgba(255,255,255,0.05)', borderRadius: 3 }}>
+                                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)' }}>Entries Submitted</Typography>
+                                        <Typography variant="body2" sx={{ fontWeight: 800 }}>{userEntries.length}</Typography>
+                                    </Box>
+                                </Stack>
+
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    fullWidth
+                                    sx={{ mt: 4, borderRadius: 3, fontWeight: 700 }}
+                                    onClick={() => {
+                                        logout();
+                                        router.push('/');
+                                    }}
+                                >
+                                    Sign Out
+                                </Button>
+                            </Paper>
+                        </motion.div>
+                    </Box>
+
+                    {/* Main Content / Badges & History */}
+                    <Box sx={{ flex: { xs: '1 1 auto', md: '0 0 66%' } }}>
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+
+                            {/* Badges Section */}
+                            <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Award size={20} color="#fbbf24" /> Unlocked Badges
+                            </Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 6 }}>
+                                {badges.map((badge, i) => (
+                                    <Box key={i} sx={{ width: { xs: '100%', sm: '32%' }, mb: { xs: 2, sm: 0 } }}>
+                                        <Paper sx={{
+                                            p: 3, borderRadius: 4, textAlign: 'center',
+                                            bgcolor: badge.unlocked ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255,255,255,0.02)',
+                                            border: `1px solid ${badge.unlocked ? 'rgba(99, 102, 241, 0.3)' : 'rgba(255,255,255,0.05)'}`,
+                                            opacity: badge.unlocked ? 1 : 0.5,
+                                            transition: 'transform 0.2s',
+                                            '&:hover': badge.unlocked ? { transform: 'translateY(-4px)' } : {}
+                                        }}>
+                                            <Box sx={{
+                                                width: 56, height: 56, mx: 'auto', mb: 2, borderRadius: '50%',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                bgcolor: badge.unlocked ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255,255,255,0.05)',
+                                                color: badge.unlocked ? '#a5b4fc' : 'rgba(255,255,255,0.3)'
+                                            }}>
+                                                {badge.icon}
+                                            </Box>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 0.5 }}>{badge.name}</Typography>
+                                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>{badge.desc}</Typography>
+                                        </Paper>
+                                    </Box>
+                                ))}
+                            </Box>
+
+                            {/* Portfolio Section */}
+                            <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <History size={20} color="#10b981" /> Your Submissions
+                            </Typography>
+
+                            {userEntries.length > 0 ? (
+                                <Box>
+                                    {userEntries.map(entry => (
+                                        <CultureCard key={entry.id} entry={entry} />
+                                    ))}
+                                </Box>
+                            ) : (
+                                <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 6, bgcolor: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                                    <ImageIcon size={48} color="rgba(255,255,255,0.2)" style={{ margin: '0 auto 16px' }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>No Heritage Shared Yet</Typography>
+                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)', mb: 3 }}>
+                                        Be the first to document an unrecorded oral tradition, recipe, or craft from your culture.
+                                    </Typography>
+                                    <Button variant="contained" href="/submit" sx={{ borderRadius: 10, px: 4, fontWeight: 700 }}>
+                                        Share Heritage Now
+                                    </Button>
+                                </Paper>
+                            )}
+
+                        </motion.div>
+                    </Box>
+                </Box>
+            </Container>
+        </Box>
+    );
+}
