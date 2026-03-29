@@ -96,6 +96,28 @@ export default function SubmitPage() {
         );
     }
 
+    if (!user) {
+        return (
+            <Container maxWidth="sm" sx={{ py: 12, textAlign: 'center' }}>
+                <Box sx={{ p: 6, borderRadius: 8, bgcolor: 'rgba(99, 102, 241, 0.05)', border: '1px solid rgba(99, 102, 241, 0.2)', backdropFilter: 'blur(10px)' }}>
+                    <Share2 size={50} color="#6366f1" style={{ margin: '0 auto 24px' }} />
+                    <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>Guardians Only</Typography>
+                    <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 6 }}>
+                        Sharing heritage requires a verified account to ensure the authenticity and authority of the global registry.
+                    </Typography>
+                    <Stack spacing={2} sx={{ alignItems: 'center' }}>
+                        <Button component={Link} href="/login" variant="contained" fullWidth sx={{ py: 2, borderRadius: 10, fontWeight: 800 }}>
+                            Sign In to Contribute
+                        </Button>
+                        <Button component={Link} href="/register" variant="text" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+                            Join the Heritage Guardians
+                        </Button>
+                    </Stack>
+                </Box>
+            </Container>
+        );
+    }
+
     return (
         <Container maxWidth="md" sx={{ py: 8, pb: 20 }}>
             <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>Share Your <span style={{ color: '#6366f1' }}>Heritage</span></Typography>
