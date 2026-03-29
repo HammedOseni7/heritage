@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, Stack, Tooltip, Avatar, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider } from '@mui/material';
 import { Globe, PlusCircle, Bell, Menu, Trophy, Search, Home, History, User, X } from 'lucide-react';
