@@ -1,13 +1,5 @@
-/**
- * One-time Firestore seeder — run with ts-node or copy-paste into a quick script.
- * Usage: After starting the dev server, open the browser console on any page
- * and call window.__seedFirestore() OR just visit /api/seed once.
- *
- * This is also triggered automatically via the /api/seed route below.
- */
-
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -21,121 +13,175 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
 
+const SEED_USERS = [
+    { id: 'user_benin', email: 'osaro@benin.ng', username: 'BronzeGuardian', firstName: 'Osaro', lastName: 'Idah', avatar: 'https://i.pravatar.cc/150?u=osaro', bio: 'Historian specializing in the Kingdom of Benin and Bronzes.', points: 2450, badgeLevel: 'Legacy Guardian', country: 'Nigeria', region: 'Africa' },
+    { id: 'user_maya', email: 'ximena@chichen.mx', username: 'MayaScholar', firstName: 'Ximena', lastName: 'Cano', avatar: 'https://i.pravatar.cc/150?u=ximena', bio: 'Epigrapher of Mayan hieroglyphs and astronomy.', points: 1890, badgeLevel: 'Heritage Keeper', country: 'Mexico', region: 'Americas' },
+    { id: 'user_petra', email: 'omar@petra.jo', username: 'DesertRose', firstName: 'Omar', lastName: 'Zaid', avatar: 'https://i.pravatar.cc/150?u=omar', bio: 'Archeologist focused on Nabataean water systems.', points: 2100, badgeLevel: 'Legacy Guardian', country: 'Jordan', region: 'Asia' },
+    { id: 'user_aboriginal', email: 'billong@dreamtime.au', username: 'DreamWalker', firstName: 'Billong', lastName: 'Yidaki', avatar: 'https://i.pravatar.cc/150?u=billong', bio: 'Custodian of the Yolngu songlines and oral history.', points: 3400, badgeLevel: 'Legacy Guardian', country: 'Australia', region: 'Oceania' },
+    { id: 'user_venice', email: 'giulia@venezia.it', username: 'Serenissima', firstName: 'Giulia', lastName: 'Moro', avatar: 'https://i.pravatar.cc/150?u=giulia', bio: 'Restoration expert for Venetian Renaissance architecture.', points: 920, badgeLevel: 'Heritage Keeper', country: 'Italy', region: 'Europe' },
+    { id: 'user_japan', email: 'akio@kyoto.jp', username: 'ZenMaster', firstName: 'Akio', lastName: 'Tanaka', avatar: 'https://i.pravatar.cc/150?u=akio', bio: 'Kyoto-based master of the tea ceremony and garden design.', points: 1550, badgeLevel: 'Legacy Guardian', country: 'Japan', region: 'Asia' },
+    { id: 'user_ethiopia', email: 'selam@lalibela.et', username: 'RockChurch', firstName: 'Selam', lastName: 'Berhe', avatar: 'https://i.pravatar.cc/150?u=selam', bio: 'Theologian and historian of the rock-hewn churches.', points: 640, badgeLevel: 'Cultural Spotter', country: 'Ethiopia', region: 'Africa' },
+    { id: 'user_india', email: 'priya@varanasi.in', username: 'GangesSoul', firstName: 'Priya', lastName: 'Iyer', avatar: 'https://i.pravatar.cc/150?u=priya', bio: 'Scholar of ancient Sanskrit and Varanasi ritual arts.', points: 880, badgeLevel: 'Heritage Keeper', country: 'India', region: 'Asia' },
+    { id: 'user_egypt', email: 'youssef@cairo.eg', username: 'PharaohFan', firstName: 'Youssef', lastName: 'Hassan', avatar: 'https://i.pravatar.cc/150?u=youssef', bio: 'Guide to the Giza plateau and hieroglyphic translation.', points: 410, badgeLevel: 'Cultural Spotter', country: 'Egypt', region: 'Africa' },
+    { id: 'user_greece', email: 'eleni@athens.gr', username: 'AgoraSpirit', firstName: 'Eleni', lastName: 'Pappa', avatar: 'https://i.pravatar.cc/150?u=eleni', bio: 'Classical archaeologist specializing in Parthenon friezes.', points: 1200, badgeLevel: 'Heritage Keeper', country: 'Greece', region: 'Europe' }
+];
+
 const SEED_ENTRIES = [
     {
-        title: 'The Legend of the Silver River',
-        description: 'An ancient oral tradition from the Guarani people about the origin of the Milky Way.',
-        content: 'The Guarani people believe that the Milky Way is a celestial path where souls travel...',
-        type: 'story',
-        author: { name: 'Elena Rojas', avatar: 'https://i.pravatar.cc/150?u=elena', badges: ['Storyteller'] },
-        location: { lat: -25.5, lng: -54.5, city: 'Puerto Iguazú', country: 'Argentina' },
-        createdAt: '2024-03-01T10:00:00Z',
-        validationCount: 42, invalidationCount: 0, isValidated: true,
-        status: 'Community Verified', images: ['/images/silver_river.png'],
-        isElderVerified: true,
-        audioUrl: 'https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg',
-        hasSimulation: true, simulationType: 'chat', comments: [],
-        metadata: { tribe: 'Guarani', language: 'Guarani', theme: 'Mythology', region: 'South America' }
-    },
-    {
-        title: 'Mancala Strategy: The Opening Gambit',
-        description: 'Traditional rules and advanced opening strategies for the ancient game of Mancala.',
-        content: 'Mancala is one of the oldest known board games. The opening move often dictates the flow...',
-        type: 'game',
-        author: { name: 'Moussa Diop', avatar: 'https://i.pravatar.cc/150?u=moussa', badges: ['Grandmaster'] },
-        location: { lat: 14.7, lng: -17.4, city: 'Dakar', country: 'Senegal' },
-        createdAt: '2024-03-05T11:20:00Z',
-        validationCount: 28, invalidationCount: 0, isValidated: true,
-        status: 'Community Verified', images: ['/images/mancala.png'],
-        has3DModel: true, hasSimulation: true, simulationType: 'mancala', comments: [],
-        metadata: { theme: 'Strategy', region: 'West Africa', tribe: 'Wolof' }
-    },
-    {
-        title: 'Himalayan Healing Herbs',
-        description: 'Traditional knowledge of medicinal plants found in the high altitude of the Himalayas.',
-        content: 'For generations, the sherpas have used the Blue Poppy for respiratory ailments...',
-        type: 'medicine',
-        author: { name: 'Tenzin Gyatso', avatar: 'https://i.pravatar.cc/150?u=tenzin', badges: ['Healer'] },
-        location: { lat: 27.9, lng: 86.9, city: 'Namche Bazaar', country: 'Nepal' },
-        createdAt: '2024-03-02T14:30:00Z',
-        validationCount: 156, invalidationCount: 0, isValidated: true,
-        status: 'Community Verified', images: ['/images/herbs.png'],
-        isElderVerified: true, hasSimulation: true, simulationType: 'chat', comments: [],
-        metadata: { tribe: 'Sherpa', language: 'Sherpa', theme: 'Herbal Remedies', region: 'Himalayas' }
-    },
-    {
-        title: 'Jollof Rice: The West African Soul',
-        description: 'A deep dive into the cultural significance and regional variations of Jollof rice.',
-        content: 'Whether it is the Nigerian smoky variety or the Senegalese Thieboudienne, Jollof is more than food...',
-        type: 'cuisine',
-        author: { name: 'Amina Okafor', avatar: 'https://i.pravatar.cc/150?u=amina', badges: ['Chef'] },
-        location: { lat: 6.5, lng: 3.4, city: 'Lagos', country: 'Nigeria' },
-        createdAt: '2024-03-06T18:00:00Z',
-        validationCount: 2, invalidationCount: 0, isValidated: false,
-        status: 'Pending',
-        originYear: 1400,
-        migrationPath: [
-            { lat: 14.4974, lng: -14.4524, city: 'Saint-Louis', country: 'Senegal', year: 1400 },
-            { lat: 9.0820, lng: 8.6753, city: 'Abuja', country: 'Nigeria', year: 1800 },
-            { lat: 7.9465, lng: -1.0232, city: 'Accra', country: 'Ghana', year: 1900 }
-        ],
-        images: ['/images/jollof.png'], comments: [],
-        metadata: { region: 'West Africa', theme: 'Culinary Migration' }
-    },
-    {
-        title: 'Kente Weaving: Patterns of History',
-        description: 'The geometric symbols of the Ashanti people representing concepts and aphorisms.',
-        content: 'Each color in a Kente cloth has a specific meaning. Yellow represents royalty...',
+        title: 'The Benin Bronzes: Spirits of the Kingdom',
+        description: 'Masterpieces of metalwork from the historic Kingdom of Benin, depicting kings and warfare.',
+        content: 'Constructed from brass and bronze, these plaques decorated the royal palace in Benin City. They represent a high point of West African art, detailing the lineage of the Obas (Kings) and complex administrative systems of the 16th century.',
         type: 'craft',
-        author: { name: 'Kwame Mensah', avatar: 'https://i.pravatar.cc/150?u=kwame', badges: ['Artisan'] },
-        location: { lat: 6.6, lng: -1.6, city: 'Kumasi', country: 'Ghana' },
-        createdAt: '2024-03-03T09:15:00Z',
-        validationCount: 89, invalidationCount: 0, isValidated: true,
-        status: 'Community Verified',
-        originYear: 1000,
-        migrationPath: [
-            { lat: 5.6037, lng: -0.1870, city: 'Accra', country: 'Ghana', year: 1000 },
-            { lat: 4.5353, lng: -7.0373, city: 'Abidjan', country: 'Ivory Coast', year: 1500 },
-            { lat: 6.5244, lng: 3.3792, city: 'Lagos', country: 'Nigeria', year: 1700 }
-        ],
-        images: ['/images/kente.png'],
-        videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-        has3DModel: true, hasSimulation: true, simulationType: 'weaving', comments: [],
-        metadata: { tribe: 'Ashanti', language: 'Twi', theme: 'Textile Art', region: 'West Africa' }
+        author: { name: 'Osaro Idah', avatar: 'https://i.pravatar.cc/150?u=osaro', badges: ['Grand Historian'] },
+        location: { lat: 6.3333, lng: 5.6222, city: 'Benin City', country: 'Nigeria' },
+        createdAt: new Date().toISOString(),
+        validationCount: 450, invalidationCount: 0, isValidated: true,
+        status: 'Community Verified', images: ['https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?q=80&w=1000', 'https://images.unsplash.com/photo-1503174971373-b1f69850bbd6?q=80&w=1000'],
+        isElderVerified: true, hasSimulation: true, simulationType: 'chat', comments: [],
+        metadata: { tribe: 'Edo', theme: 'Royal Art', region: 'Africa' }
     },
     {
-        title: 'Inti Raymi: Festival of the Sun',
-        description: 'The ancient Incan winter solstice celebration in Cusco.',
-        content: 'Inti Raymi is a religious ceremony of the Inca Empire in honor of the god Inti...',
+        title: 'Chichen Itza: The Descent of Kukulcan',
+        description: 'The monumental Mayan city-state, known for its advanced astronomical alignments.',
+        content: 'During the spring and autumn equinoxes, the shadow of the El Castillo pyramid mimics a serpent descending the stairs—a tribute to Kukulcan. This architectural marvel proves the Mayas advanced knowledge of the solar calendar.',
         type: 'festival',
-        author: { name: 'Mateo Quispe', avatar: 'https://i.pravatar.cc/150?u=mateo', badges: ['Custodian'] },
-        location: { lat: -13.5, lng: -71.9, city: 'Cusco', country: 'Peru' },
-        createdAt: '2024-03-04T12:00:00Z',
-        validationCount: 15, invalidationCount: 0, isValidated: true,
-        status: 'Community Verified', images: ['/images/inti_raymi.png'], comments: [],
-        metadata: { tribe: 'Inca', language: 'Quechua', theme: 'Solstice', region: 'Andes' }
+        author: { name: 'Ximena Cano', avatar: 'https://i.pravatar.cc/150?u=ximena', badges: ['Astronomer'] },
+        location: { lat: 20.6843, lng: -88.5678, city: 'Yucatán', country: 'Mexico' },
+        createdAt: new Date().toISOString(),
+        validationCount: 890, invalidationCount: 1, isValidated: true,
+        status: 'Community Verified', images: ['https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000'],
+        has3DModel: true, audioUrl: 'https://actions.google.com/sounds/v1/ambiences/natural_wind.ogg',
+        metadata: { tribe: 'Maya', theme: 'Astronomy', region: 'Americas' }
     },
     {
-        title: 'Ofada Rice & Ayamase Stew',
-        description: 'A deeply traditional Yoruba delicacy, known for its distinct aroma and spicy companion stew.',
-        content: 'Ofada rice is a unique, unpolished short-grain rice grown primarily in South-Western Nigeria...',
-        type: 'cuisine',
-        author: { name: 'Folake Adeleke', avatar: 'https://i.pravatar.cc/150?u=folake', badges: ['Culinary Custodian'] },
-        location: { lat: 6.8833, lng: 3.5500, city: 'Ofada Town', country: 'Nigeria' },
-        createdAt: '2024-03-08T14:00:00Z',
-        validationCount: 112, invalidationCount: 0, isValidated: true,
-        status: 'Community Verified',
-        images: ['https://images.unsplash.com/photo-1596560548464-f010549b84d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'],
-        comments: [],
-        metadata: { tribe: 'Yoruba', language: 'Yoruba', theme: 'Gastronomy', region: 'West Africa' }
+        title: 'Petra: The Rose-Red City of Nabataeans',
+        description: 'A masterpiece of architecture carved directly into vibrant sandstone cliffs.',
+        content: 'Petra was the thriving capital of the Nabataean Empire between 400 BC and AD 106. Its most famous structure, Al-Khazneh (The Treasury), showcases an intricate fusion of Hellenistic and Eastern architectural styles.',
+        type: 'craft',
+        author: { name: 'Omar Zaid', avatar: 'https://i.pravatar.cc/150?u=omar', badges: ['Custodian'] },
+        location: { lat: 30.3285, lng: 35.4444, city: 'Ma\'an', country: 'Jordan' },
+        createdAt: new Date().toISOString(),
+        validationCount: 1200, invalidationCount: 0, isValidated: true,
+        status: 'Community Verified', images: ['https://images.unsplash.com/photo-1580193103504-471f40097162?q=80&w=1000'],
+        hasSimulation: true, simulationType: 'chat',
+        metadata: { theme: 'Rock-Cut Architecture', region: 'Asia' }
+    },
+    {
+        title: 'Dreamtime: The Rainbow Serpent',
+        description: 'The fundamental creation story of Australian Aboriginal spirituality.',
+        content: 'The Rainbow Serpent (Wagyl) is the creator of the world in many Aboriginal cultures. It carved the rivers and valleys across the land as it moved. These stories are passed down through "songlines" that function as maps.',
+        type: 'story',
+        author: { name: 'Billong Yidaki', avatar: 'https://i.pravatar.cc/150?u=billong', badges: ['Songman'] },
+        location: { lat: -12.4634, lng: 130.8456, city: 'Darwin', country: 'Australia' },
+        createdAt: new Date().toISOString(),
+        validationCount: 3000, invalidationCount: 0, isValidated: true,
+        status: 'Community Verified', images: ['https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=1000'],
+        isElderVerified: true, hasSimulation: true, simulationType: 'chat',
+        metadata: { tribe: 'Yolngu', language: 'Yolngu Matha', theme: 'Cosmology', region: 'Oceania' }
+    },
+    {
+        title: 'Lalibela: The New Jerusalem',
+        description: 'Monolithic rock-hewn churches of Ethiopia, carved from the top down.',
+        content: 'The 11 medieval churches of Lalibela remain a place of pilgrimage for Orthodox Christians. The church of St. George (Bete Giyorgis) is the most famous, carved in the shape of a cross directly into volcanic tuff.',
+        type: 'craft',
+        author: { name: 'Selam Berhe', avatar: 'https://i.pravatar.cc/150?u=selam', badges: ['Theologian'] },
+        location: { lat: 12.0333, lng: 39.0333, city: 'Lalibela', country: 'Ethiopia' },
+        createdAt: new Date().toISOString(),
+        validationCount: 420, invalidationCount: 0, isValidated: true,
+        status: 'Community Verified', images: ['https://images.unsplash.com/photo-1560969562-b13c873fcc94?q=80&w=1000'],
+        metadata: { theme: 'Sacred Architecture', region: 'Africa' }
+    },
+    {
+        title: 'Kyoto Zen Gardens: The Karesansui',
+        description: 'Dry landscape gardens designed to stimulate meditation and spiritual growth.',
+        content: 'Zen gardens like Ryoan-ji use rocks and raked gravel to represent islands and water. They are physical manifestations of the Zen philosophy of simplicity and interconnectedness.',
+        type: 'medicine',
+        author: { name: 'Akio Tanaka', avatar: 'https://i.pravatar.cc/150?u=akio', badges: ['Zen Master'] },
+        location: { lat: 35.0392, lng: 135.7285, city: 'Kyoto', country: 'Japan' },
+        createdAt: new Date().toISOString(),
+        validationCount: 155, invalidationCount: 0, isValidated: true,
+        status: 'Community Verified', images: ['https://images.unsplash.com/photo-1545048702-79362596cdc9?q=80&w=1000'],
+        hasSimulation: true, simulationType: 'chat',
+        metadata: { theme: 'Spiritual Well-being', region: 'Asia' }
+    },
+    {
+        title: 'The Varanasi Ghats: Rituals of Life & Death',
+        description: 'The sacred riverfront of the Ganges, where thousands years of tradition remain unbroken.',
+        content: 'Varanasi is one of the oldest living cities in the world. The evening Ganga Aarti ritual, with lamps floating on the river, is a profound expression of Hindu devotion and the cycle of rebirth.',
+        type: 'festival',
+        author: { name: 'Priya Iyer', avatar: 'https://i.pravatar.cc/150?u=priya', badges: ['Scholar'] },
+        location: { lat: 25.3176, lng: 82.9739, city: 'Varanasi', country: 'India' },
+        createdAt: new Date().toISOString(),
+        validationCount: 560, invalidationCount: 12, isValidated: true,
+        status: 'Community Verified', images: ['https://images.unsplash.com/photo-1524492412937-b28074a5d7da?q=80&w=1000'],
+        metadata: { theme: 'Sacred Rituals', region: 'Asia' }
+    },
+    {
+        title: 'Masai Jumping Dance: The Adumu',
+        description: 'The iconic rite of passage for Young Masai warriors (Moran).',
+        content: 'The Adumu is performed during the Eunoto ceremony. Warriors jump as high as they can to show their strength, agility, and eligibility to lead the tribe. It is accompanied by deep, rhythmic chanting.',
+        type: 'festival',
+        author: { name: 'Leshari Ole', avatar: 'https://i.pravatar.cc/150?u=masai', badges: ['Warrior'] },
+        location: { lat: -1.2833, lng: 36.8167, city: 'Maasai Mara', country: 'Kenya' },
+        createdAt: new Date().toISOString(),
+        validationCount: 45, invalidationCount: 0, isValidated: false,
+        status: 'Pending', images: ['https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?q=80&w=1000'],
+        metadata: { tribe: 'Maasai', region: 'Africa' }
+    },
+    {
+        title: 'Venetian Carnival Masks: Commedia dell\'Arte',
+        description: 'The centuries-old tradition of masked anonymity during the Venice Carnival.',
+        content: 'Masks like the Bauta and Volto allowed Venetians to participate in society regardless of class. Each design has its own history and role in the theater of the streets.',
+        type: 'craft',
+        author: { name: 'Giulia Moro', avatar: 'https://i.pravatar.cc/150?u=giulia', badges: ['Artisan'] },
+        location: { lat: 45.4408, lng: 12.3155, city: 'Venice', country: 'Italy' },
+        createdAt: new Date().toISOString(),
+        validationCount: 120, invalidationCount: 0, isValidated: true,
+        status: 'Community Verified', images: ['https://images.unsplash.com/photo-1542646272-511ce630737a?q=80&w=1000'],
+        metadata: { theme: 'Social Traditions', region: 'Europe' }
+    },
+    {
+        title: 'The Great Wall: Stone & Soul',
+        description: 'The world\'s longest defensive system, a marvel of ancient engineering.',
+        content: 'Spanning thousands of miles, the Wall protected the Silk Road and unified the empire. It is a symbol of Chinese persistence and architectural ingenuity through multiple dynasties.',
+        type: 'craft',
+        author: { name: 'Li Wei', avatar: 'https://i.pravatar.cc/150?u=li', badges: ['Structural Historian'] },
+        location: { lat: 40.4319, lng: 116.5704, city: 'Mutianyu', country: 'China' },
+        createdAt: new Date().toISOString(),
+        validationCount: 220, invalidationCount: 0, isValidated: true,
+        status: 'Community Verified', images: ['https://images.unsplash.com/photo-1508804185872-d7badad00f7d?q=80&w=1000'],
+        metadata: { theme: 'Military Architecture', region: 'Asia' }
     }
 ];
 
-export async function seedEntries(): Promise<{ seeded: number; skipped: string }> {
-    const snapshot = await getDocs(collection(db, 'entries'));
-    if (!snapshot.empty) {
-        return { seeded: 0, skipped: `Already seeded — ${snapshot.size} entries exist in Firestore.` };
+async function clearCollection(collectionName: string) {
+    const snapshot = await getDocs(collection(db, collectionName));
+    const promises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+    await Promise.all(promises);
+}
+
+export async function seedUsers(force: boolean = false): Promise<{ seeded: number; skipped: string }> {
+    const snapshot = await getDocs(collection(db, 'users'));
+    if (!snapshot.empty && !force) {
+        return { seeded: 0, skipped: `Already seeded — ${snapshot.size} users exist.` };
     }
+
+    if (force) await clearCollection('users');
+
+    for (const user of SEED_USERS) {
+        await setDoc(doc(db, 'users', user.id), user);
+    }
+
+    return { seeded: SEED_USERS.length, skipped: '' };
+}
+
+export async function seedEntries(force: boolean = false): Promise<{ seeded: number; skipped: string }> {
+    const snapshot = await getDocs(collection(db, 'entries'));
+    if (!snapshot.empty && !force) {
+        return { seeded: 0, skipped: `Already seeded — ${snapshot.size} entries exist.` };
+    }
+
+    if (force) await clearCollection('entries');
 
     for (const entry of SEED_ENTRIES) {
         await addDoc(collection(db, 'entries'), entry);

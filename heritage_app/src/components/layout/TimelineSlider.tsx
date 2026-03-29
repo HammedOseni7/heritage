@@ -4,7 +4,7 @@ import React from 'react';
 import { Box, Paper, Slider, Typography, IconButton, Stack, Tooltip } from '@mui/material';
 import { Clock, History, FastForward, Rewind } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSimulation } from '@/theme/SimulationContext';
+import { useHeritage } from '@/theme/HeritageContext';
 
 const MARKS = [
     { value: 1000, label: '1000 AD' },
@@ -15,7 +15,7 @@ const MARKS = [
 ];
 
 export default function TimelineSlider() {
-    const { currentYear, setCurrentYear } = useSimulation();
+    const { currentYear, setCurrentYear } = useHeritage();
 
     return (
         <Box sx={{

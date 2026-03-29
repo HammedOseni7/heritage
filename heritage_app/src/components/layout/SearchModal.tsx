@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, TextField, IconButton, Dialog, Slide, Stack, Paper, Chip, Avatar, CircularProgress, Button } from '@mui/material';
 import { Search as SearchIcon, X, Bot, MapPin, Feather } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSimulation } from '@/theme/SimulationContext';
+import { useHeritage } from '@/theme/HeritageContext';
 import { CulturalEntry } from '@/types';
 import Link from 'next/link';
 
@@ -18,7 +18,7 @@ interface SearchModalProps {
 }
 
 export default function SearchModal({ open, onClose }: SearchModalProps) {
-    const { entries } = useSimulation();
+    const { entries } = useHeritage();
     const [query, setQuery] = useState('');
     const [localResults, setLocalResults] = useState<CulturalEntry[]>([]);
 

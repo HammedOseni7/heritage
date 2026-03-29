@@ -4,13 +4,13 @@ import React from 'react';
 import { Box, Container, Typography, Avatar, Grid, Paper, Chip, LinearProgress, Stack, Button } from '@mui/material';
 import { ShieldCheck, Award, Star, History, Image as ImageIcon, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useSimulation } from '@/theme/SimulationContext';
+import { useHeritage } from '@/theme/HeritageContext';
 import { useAuth } from '@/theme/AuthContext';
 import CultureCard from '@/components/feed/CultureCard';
 import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
-    const { entries, userValidationsGiven } = useSimulation();
+    const { entries, userValidationsGiven } = useHeritage();
     const { user, logout } = useAuth();
     const router = useRouter();
 

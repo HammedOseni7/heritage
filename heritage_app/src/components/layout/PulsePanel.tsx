@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 import { Box, Paper, Typography, Stack, Button, LinearProgress, Collapse } from '@mui/material';
 import { Activity, ChevronUp, ChevronDown, Globe, Play, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useSimulation } from '@/theme/SimulationContext';
+import { useHeritage } from '@/theme/HeritageContext';
 
 export default function PulsePanel() {
     const [isOpen, setIsOpen] = useState(false);
-    const { addRandomEntries, isSimulating, entries } = useSimulation();
+    const { entries } = useHeritage();
 
     const verifiedCount = entries.filter(e => e.isValidated).length;
     const verifiedRate = Math.round((verifiedCount / (entries.length || 1)) * 100);
@@ -54,9 +54,9 @@ export default function PulsePanel() {
                     }}
                 >
                     <Stack direction="row" spacing={1} alignItems="center">
-                        <Activity size={18} color="#6366f1" className={isSimulating ? "animate-pulse" : ""} />
+                        <Activity size={18} color="#6366f1" />
                         <Typography variant="subtitle2" sx={{ fontWeight: 900, color: 'white', letterSpacing: '0.15em', fontSize: '0.7rem' }}>
-                            {isSimulating ? 'SIMULATION ACTIVE' : 'HERITAGE PULSE LIVE'}
+                            HERITAGE PULSE LIVE
                         </Typography>
                         <motion.div animate={{ rotate: isOpen ? 180 : 0 }}>
                             <ChevronUp size={18} color="rgba(255,255,255,0.5)" />
@@ -95,46 +95,6 @@ export default function PulsePanel() {
                             </Box>
                         </Stack>
 
-                        <Box sx={{
-                            p: 2.5,
-                            borderRadius: 6,
-                            bgcolor: 'rgba(99, 102, 241, 0.08)',
-                            border: '1px solid rgba(99, 102, 241, 0.15)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            backdropFilter: 'blur(10px)'
-                        }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
-                                <motion.div animate={isSimulating ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 2, ease: "linear" }}>
-                                    <Box sx={{
-                                        width: 44, height: 44, borderRadius: '50%',
-                                        bgcolor: isSimulating ? 'rgba(16, 185, 129, 0.1)' : 'rgba(99, 102, 241, 0.1)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        border: `1px solid ${isSimulating ? '#10b981' : '#6366f1'}`
-                                    }}>
-                                        {isSimulating ? <Activity size={20} color="#10b981" /> : <Play size={20} color="#6366f1" fill="currentColor" />}
-                                    </Box>
-                                </motion.div>
-                                <Box>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 900, color: 'white', letterSpacing: '0.05em' }}>
-                                        {isSimulating ? 'SIMULATION ACTIVE' : 'LIVE DEMO MODE'}
-                                    </Typography>
-                                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
-                                        Injecting real-time discoveries into global hub
-                                    </Typography>
-                                </Box>
-                            </Box>
-                            <Button
-                                variant="contained"
-                                color={isSimulating ? "success" : "primary"}
-                                onClick={() => addRandomEntries(10)}
-                                disabled={isSimulating}
-                                sx={{ borderRadius: 10, px: 4, py: 1, fontWeight: 900, fontSize: '0.8rem' }}
-                            >
-                                {isSimulating ? 'SMART SYNC...' : 'SIMULATE'}
-                            </Button>
-                        </Box>
                     </Box>
                 </Collapse>
             </Paper>

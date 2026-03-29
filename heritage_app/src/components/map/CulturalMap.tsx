@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Box, Paper, Typography, CircularProgress, Stack } from '@mui/material';
 import { CulturalEntry, CultureType } from '@/types';
-import { useSimulation } from '@/theme/SimulationContext';
+import { useHeritage } from '@/theme/HeritageContext';
 
 // Dynamic import to avoid SSR issues with globe.gl
 const Globe = dynamic(() => import('react-globe.gl'), {
@@ -40,7 +40,7 @@ const PILLAR_COLORS: Record<CultureType, string> = {
 };
 
 export default function CulturalMap({ entries, onEntryClick }: CulturalMapProps) {
-    const { currentYear } = useSimulation();
+    const { currentYear } = useHeritage();
     const globeRef = useRef<any>(null);
     const [globeData, setGlobeData] = useState<any[]>([]);
     const [arcsData, setArcsData] = useState<any[]>([]);
@@ -120,30 +120,32 @@ export default function CulturalMap({ entries, onEntryClick }: CulturalMapProps)
                 <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <span style={{ fontSize: '1.2rem' }}>🌍</span> Heritage Map Legend
                 </Typography>
-                <Grid container spacing={1.5} sx={{ maxWidth: 280 }}>
+                <MapGrid container spacing={1.5} sx={{ maxWidth: 280 }}>
                     {(Object.keys(PILLAR_ICONS) as CultureType[]).map((type) => (
-                        <Grid item xs={6} key={type}>
+                        <MapGrid item xs={6} key={type}>
                             <Stack direction="row" spacing={1} alignItems="center">
                                 <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: PILLAR_COLORS[type] }} />
                                 <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
                                     {PILLAR_ICONS[type]} {type.charAt(0).toUpperCase() + type.slice(1)}
                                 </Typography>
                             </Stack>
-                        </Grid>
+                        </MapGrid>
                     ))}
-                </Grid>
+                </MapGrid>
             </Paper>
         </Box>
     );
 }
 
-// Simple Grid since we are in a component that might use different versions
-function Grid({ children, container, item, xs, sx }: any) {
+// Simple Grid helper
+function MapGrid({ children, container, item, xs, sx }: any) {
     return (
         <Box sx={{
             display: container ? 'flex' : 'block',
             flexWrap: container ? 'wrap' : 'nowrap',
-            width: item ? `${(xs / 12) * 100}%` : '100%',
+            flexBasis: item ? `${(xs / 12) * 100}%` : 'auto',
+            maxWidth: item ? `${(xs / 12) * 100}%` : '100%',
+            p: 0.5,
             ...sx
         }}>
             {children}

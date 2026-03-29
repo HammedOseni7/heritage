@@ -1,12 +1,12 @@
 'use client';
 
-import { useSimulation } from '@/theme/SimulationContext';
+import { useHeritage } from '@/theme/HeritageContext';
 import { useAuth } from '@/theme/AuthContext';
 import { Typography, Container, Grid, Card, CardContent, Button, Chip, Box } from '@mui/material';
 import Link from 'next/link';
 
 export default function ReviewQueuePage() {
-    const { entries } = useSimulation();
+    const { entries } = useHeritage();
     const { user } = useAuth();
     // 1. Filter only pending entries
     const pendingEntries = entries.filter(e => e.status === 'Pending');

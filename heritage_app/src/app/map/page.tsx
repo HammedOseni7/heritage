@@ -5,12 +5,12 @@ import { Box } from '@mui/material';
 import CulturalMap from '@/components/map/CulturalMap';
 import EntryDetail from '@/components/feed/EntryDetail';
 import PulsePanel from '@/components/layout/PulsePanel';
-import { useSimulation } from '@/theme/SimulationContext';
+import { useHeritage } from '@/theme/HeritageContext';
 import { CulturalEntry } from '@/types';
 
 export default function MapPage() {
     const [selectedEntry, setSelectedEntry] = useState<CulturalEntry | null>(null);
-    const { entries } = useSimulation();
+    const { entries } = useHeritage();
     const verifiedEntries = entries.filter(e => e.status === 'Community Verified');
 
     return (

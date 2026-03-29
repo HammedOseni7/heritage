@@ -44,7 +44,7 @@ export default function Header() {
                         <IconButton color="inherit" onClick={() => setSearchOpen(true)}>
                             <Search size={20} />
                         </IconButton>
-                        <Button component={Link} href="/" sx={{ color: 'inherit', fontWeight: 700 }}>Encyclopedia</Button>
+                        <Button component={Link} href="/heritage" sx={{ color: 'inherit', fontWeight: 700 }}>View Heritage</Button>
                         <Button component={Link} href="/map" startIcon={<Globe size={18} />} sx={{ color: 'inherit', fontWeight: 700 }}>World Map</Button>
                         <Tooltip title="Global Leaderboard">
                             <IconButton color="inherit" component={Link} href="/leaderboard"><Trophy size={20} /></IconButton>

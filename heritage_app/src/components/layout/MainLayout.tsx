@@ -1,7 +1,8 @@
 import React from 'react';
 import Header from './Header';
 import MobileNav from './MobileNav';
-import { Box, Container } from '@mui/material';
+import Footer from './Footer';
+import { Box } from '@mui/material';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -10,6 +11,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             <Box component="main" sx={{ flexGrow: 1 }}>
                 {children}
             </Box>
+            <Footer />
             <MobileNav />
         </Box>
     );

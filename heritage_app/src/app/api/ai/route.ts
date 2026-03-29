@@ -1,68 +1,89 @@
 import { NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { MOCK_ENTRIES } from '@/data/mockData';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, limit } from 'firebase/firestore';
+
+// Initialize Gemini
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q');
+    const userQuery = searchParams.get('q');
     const persona = searchParams.get('persona');
 
-    if (!query) {
+    if (!userQuery) {
         return NextResponse.json({ error: 'Query parameter "q" is required' }, { status: 400 });
     }
 
     try {
-        // 1. Search Wikipedia for the closest matching page title
-        const searchRes = await fetch(
-            `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=&format=json&origin=*`
-        );
-
-        const searchData = await searchRes.json();
-
-        if (!searchData.query?.search || searchData.query.search.length === 0) {
-            return NextResponse.json({ answer: "I scoured the historical archives but couldn't find a direct record of that specific term. Could it be known by another name in the region?" }, { status: 404 });
-        }
-
-        const bestMatchTitle = searchData.query.search[0].title;
-
-        // 2. Fetch the introductory extract for that specific page
-        const extractRes = await fetch(
-            `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&titles=${encodeURIComponent(bestMatchTitle)}&format=json&origin=*`
-        );
-
-        const extractData = await extractRes.json();
-        const pages = extractData.query?.pages;
-
-        if (!pages) {
-            return NextResponse.json({ answer: "I found a reference, but the archives are currently unreadable. Let's try another search." }, { status: 500 });
-        }
-
-        const pageId = Object.keys(pages)[0];
-        const rawExtract = pages[pageId].extract;
-
-        if (!rawExtract) {
-            return NextResponse.json({ answer: "The archives mention this, but I cannot retrieve the full context at this moment." }, { status: 404 });
-        }
-
-        // Clean up and truncate the response
-        const paragraphs = rawExtract.split('\n').filter(Boolean);
-        let finalAnswer = paragraphs[0];
-
-        // Apply Persona Logic
-        if (persona) {
-            finalAnswer = `As a Guardian of ${persona}, I can tell you that ${finalAnswer.replace(/^.*is /, 'our tradition is ')}`;
-            if (paragraphs.length > 1) {
-                finalAnswer += ` We also believe that ${paragraphs[1].charAt(0).toLowerCase() + paragraphs[1].slice(1)}`;
+        // 1. Fetch live "Living Memory" from Firebase (Firestore)
+        let liveHubData = "";
+        try {
+            const liveSnapshot = await getDocs(query(collection(db, "entries"), limit(5)));
+            const liveEntries = liveSnapshot.docs.map(d => d.data() as any);
+            if (liveEntries.length > 0) {
+                liveHubData = `Living Memory (Firebase): ${liveEntries.map(m => `[${m.title}: ${m.description}]`).join('; ')}`;
             }
-        } else {
-            finalAnswer = `According to the global archives on "${bestMatchTitle}": ${finalAnswer}`;
-            if (finalAnswer.length < 300 && paragraphs.length > 1) {
-                finalAnswer += `\n\nFurthermore, ${paragraphs[1]}`;
+        } catch (e) { console.error('Silent Firebase fetch failure:', e); }
+
+        // 2. Check the "Collective Hub Memory" (MOCK_ENTRIES)
+        const hubMatches = MOCK_ENTRIES.filter(e => 
+            e.title.toLowerCase().includes(userQuery.toLowerCase()) || 
+            e.description.toLowerCase().includes(userQuery.toLowerCase())
+        ).slice(0, 3);
+
+        let groundingContext = `${liveHubData}${hubMatches.length > 0 ? ` Community Record: ${hubMatches.map(m => `[${m.title}: ${m.description}]`).join('; ')}` : ""}`;
+
+        // 2. Supplement with Wikipedia Grounding (only if no strong hub matches)
+        if (hubMatches.length === 0) {
+            const searchRes = await fetch(
+                `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(userQuery)}&utf8=&format=json&origin=*`
+            );
+            const searchData = await searchRes.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const bestMatchTitle = searchData.query.search[0].title;
+                const extractRes = await fetch(
+                    `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&titles=${encodeURIComponent(bestMatchTitle)}&format=json&origin=*`
+                );
+                const extractData = await extractRes.json();
+                const pages = extractData.query?.pages;
+                const pageId = Object.keys(pages)[0];
+                groundingContext = pages[pageId].extract || "";
             }
         }
 
-        return NextResponse.json({ answer: finalAnswer });
+        // 3. Persona Reasoning via Gemini 2.5 Flash
+        if (process.env.GEMINI_API_KEY) {
+            const systemPrompt = `You are the "Heritage Hub Institutional Guardian." 
+            Your role is to guide the user in discovering world heritage. 
+            Grounding Context: "${groundingContext || "No direct record found in hub or wiki archives."}"
+            
+            Task: Using the context (if available) and your vast knowledge, answer the user's inquiry: "${userQuery}".
+            ${persona ? `Speak as a Guardian of "${persona}" traditions.` : "Speak with an institutional, respectful, and storytelling tone."}
+            
+            Always prioritize community entries found in Grounding Context if they match the user's intent.
+            Always encourage the user to document their own findings in the Hub.
+            Keep responses concise but evocative (max 150 words).`;
+
+            const result = await model.generateContent(systemPrompt);
+            const response = await result.response;
+            const cleanText = response.text().replace(/\*/g, '');
+            return NextResponse.json({ answer: cleanText });
+        }
+
+        // Fallback to Wikipedia logic if API key is missing
+        if (!groundingContext) {
+            return NextResponse.json({ answer: "I scoured the archives but found only whispers. Perhaps the region knows it by another name?" }, { status: 404 });
+        }
+
+        const fallbackText = `Institutional Archive on ${query}: ${groundingContext.split('\n')[0]}`;
+        return NextResponse.json({ answer: fallbackText + "\n\n(Note: Connect your Gemini API Key to unlock advanced storytelling mode.)" });
 
     } catch (error) {
-        console.error('Wikipedia AI Search Error:', error);
-        return NextResponse.json({ answer: 'I experienced an interference while connecting to the historical databases. Please pause and try again.' }, { status: 500 });
+        console.error('Heritage AI Error:', error);
+        return NextResponse.json({ answer: 'I experienced an interference while connecting to the historical databases.' }, { status: 500 });
     }
 }

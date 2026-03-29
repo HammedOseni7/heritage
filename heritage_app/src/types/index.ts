@@ -42,8 +42,6 @@ export interface CulturalEntry {
     modelUrl?: string;
     originYear?: number;
     migrationPath?: Location[]; // Paths showing how the tradition moved
-    hasSimulation?: boolean;
-    simulationType?: 'mancala' | 'weaving' | 'chat';
     metadata?: {
         tribe?: string;
         language?: string;
@@ -54,15 +52,19 @@ export interface CulturalEntry {
 
 export interface UserProfile {
     id: string;
-    name: string;
-    bio: string;
+    email: string;
+    username: string;
+    firstName?: string;
+    lastName?: string;
     avatar: string;
+    bio?: string;
     points: number;
     badgeLevel: 'Newcomer' | 'Cultural Spotter' | 'Heritage Keeper' | 'Legacy Guardian';
     contributions: string[]; // IDs of entries
     tribe?: string;
     language?: string;
     region?: string;
+    country?: string;
 }
 
 export interface ValidationVote {

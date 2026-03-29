@@ -3,16 +3,15 @@ import { Card, CardContent, CardMedia, Typography, Box, Avatar, Chip, IconButton
 import { Heart, MessageCircle, MapPin, Share2, CheckCircle2, ShieldCheck, ShieldAlert, Award, PlayCircle, PauseCircle, Music, Send, Languages, Box as BoxIcon } from 'lucide-react';
 import { CulturalEntry } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSimulation } from '@/theme/SimulationContext';
+import { useHeritage } from '@/theme/HeritageContext';
 import ArtifactViewer from './ArtifactViewer';
-import SimulationModal from '../simulations/SimulationModal';
 
 interface CultureCardProps {
     entry: CulturalEntry;
 }
 
 export default function CultureCard({ entry }: CultureCardProps) {
-    const { validateEntry, invalidateEntry, addComment } = useSimulation();
+    const { validateEntry, invalidateEntry, addComment } = useHeritage();
     const [hasValidated, setHasValidated] = useState(false);
     const [hasInvalidated, setHasInvalidated] = useState(false);
     const [showComments, setShowComments] = useState(false);
@@ -28,8 +27,6 @@ export default function CultureCard({ entry }: CultureCardProps) {
     // 3D States
     const [show3D, setShow3D] = useState(false);
 
-    // Simulation States
-    const [showSim, setShowSim] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -100,7 +97,8 @@ export default function CultureCard({ entry }: CultureCardProps) {
         }
     };
 
-    const isCommunityVerified = entry.validationCount >= 3;
+        const isCommunityVerified = entry.status === 'Community Verified' || entry.isValidated === true || (entry.validationCount && entry.validationCount >= 5);
+        const isPending = !isCommunityVerified && entry.status !== 'Needs Revision';
 
     return (
         <motion.div
@@ -139,28 +137,9 @@ export default function CultureCard({ entry }: CultureCardProps) {
                         />
                         <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 1 }}>
                             {entry.isElderVerified && <Chip icon={<Award size={14} color="#fbbf24" />} label="Elder Verified" sx={{ bgcolor: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', fontWeight: 900, fontSize: '0.65rem', backdropFilter: 'blur(10px)', border: '1px solid rgba(251, 191, 36, 0.3)', textTransform: 'uppercase' }} />}
-                            {isCommunityVerified && <Chip icon={<ShieldCheck size={14} color="#10b981" />} label="Community Verified" sx={{ bgcolor: 'rgba(16, 185, 129, 0.2)', color: '#34d399', fontWeight: 900, fontSize: '0.65rem', backdropFilter: 'blur(10px)', border: '1px solid rgba(16, 185, 129, 0.3)', textTransform: 'uppercase' }} />}
+                            {isCommunityVerified && <Chip icon={<ShieldCheck size={14} color="#10b981" />} label="Verified" sx={{ bgcolor: 'rgba(16, 185, 129, 0.2)', color: '#34d399', fontWeight: 900, fontSize: '0.65rem', backdropFilter: 'blur(10px)', border: '1px solid rgba(16, 185, 129, 0.3)', textTransform: 'uppercase' }} />}
+                            {isPending && <Chip icon={<ShieldAlert size={14} color="#f43f5e" />} label="Pending" sx={{ bgcolor: 'rgba(244, 63, 94, 0.1)', color: '#fb7185', fontWeight: 900, fontSize: '0.65rem', backdropFilter: 'blur(10px)', border: '1px solid rgba(244, 63, 94, 0.2)', textTransform: 'uppercase' }} />}
                         </Box>
-                        {entry.hasSimulation && (
-                            <Box sx={{ position: 'absolute', bottom: 16, right: 16, zIndex: 2 }}>
-                                <Button
-                                    variant="contained"
-                                    size="small"
-                                    startIcon={<PlayCircle size={16} />}
-                                    onClick={(e) => { e.stopPropagation(); setShowSim(true); }}
-                                    sx={{
-                                        borderRadius: 10,
-                                        bgcolor: 'rgba(16, 185, 129, 0.7)',
-                                        backdropFilter: 'blur(10px)',
-                                        border: '1px solid rgba(255,255,255,0.2)',
-                                        fontWeight: 800,
-                                        fontSize: '0.65rem'
-                                    }}
-                                >
-                                    Start Simulation
-                                </Button>
-                            </Box>
-                        )}
                     </Box>
                 ) : entry.images && entry.images.length > 0 ? (
                     <Box sx={{ overflow: 'hidden', height: 260, position: 'relative' }}>
@@ -195,47 +174,46 @@ export default function CultureCard({ entry }: CultureCardProps) {
                                     }}
                                 />
                             )}
-                            <AnimatePresence>
-                                {isCommunityVerified && (
-                                    <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-                                        <Chip
-                                            icon={<ShieldCheck size={14} color="#10b981" />}
-                                            label="Community Verified"
-                                            sx={{
-                                                bgcolor: 'rgba(16, 185, 129, 0.2)',
-                                                color: '#34d399',
-                                                fontWeight: 900,
-                                                fontSize: '0.65rem',
-                                                backdropFilter: 'blur(10px)',
-                                                border: '1px solid rgba(16, 185, 129, 0.3)',
-                                                textTransform: 'uppercase'
-                                            }}
-                                        />
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                             <AnimatePresence>
+                                 {isCommunityVerified && (
+                                     <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+                                         <Chip
+                                             icon={<ShieldCheck size={14} color="#10b981" />}
+                                             label="Verified"
+                                             sx={{
+                                                 bgcolor: 'rgba(16, 185, 129, 0.2)',
+                                                 color: '#34d399',
+                                                 fontWeight: 900,
+                                                 fontSize: '0.65rem',
+                                                 backdropFilter: 'blur(10px)',
+                                                 border: '1px solid rgba(16, 185, 129, 0.3)',
+                                                 textTransform: 'uppercase'
+                                             }}
+                                         />
+                                     </motion.div>
+                                 )}
+                                 {isPending && (
+                                     <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+                                         <Chip
+                                             icon={<ShieldAlert size={14} color="#f43f5e" />}
+                                             label="Pending"
+                                             sx={{
+                                                 bgcolor: 'rgba(244, 63, 94, 0.1)',
+                                                 color: '#fb7185',
+                                                 fontWeight: 900,
+                                                 fontSize: '0.65rem',
+                                                 backdropFilter: 'blur(10px)',
+                                                 border: '1px solid rgba(244, 63, 94, 0.2)',
+                                                 textTransform: 'uppercase'
+                                             }}
+                                         />
+                                     </motion.div>
+                                 )}
+                             </AnimatePresence>
                         </Box>
 
                         {/* Simulation / 3D Action Overlay */}
                         <Box sx={{ position: 'absolute', bottom: 16, right: 16, zIndex: 2, display: 'flex', gap: 1 }}>
-                            {entry.hasSimulation && (
-                                <Button
-                                    variant="contained"
-                                    size="small"
-                                    startIcon={<PlayCircle size={16} />}
-                                    onClick={(e) => { e.stopPropagation(); setShowSim(true); }}
-                                    sx={{
-                                        borderRadius: 10,
-                                        bgcolor: 'rgba(16, 185, 129, 0.7)',
-                                        backdropFilter: 'blur(10px)',
-                                        border: '1px solid rgba(255,255,255,0.2)',
-                                        fontWeight: 800,
-                                        fontSize: '0.65rem'
-                                    }}
-                                >
-                                    Start Simulation
-                                </Button>
-                            )}
                             {entry.has3DModel && (
                                 <Button
                                     variant="contained"
@@ -254,33 +232,6 @@ export default function CultureCard({ entry }: CultureCardProps) {
                                     Inspect in 3D
                                 </Button>
                             )}
-                        </Box>
-                    </Box>
-                ) : entry.hasSimulation ? (
-                    <Box sx={{ overflow: 'hidden', height: 260, position: 'relative', bgcolor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Box sx={{ textAlign: 'center' }}>
-                            <Box sx={{ p: 2, borderRadius: '50%', bgcolor: 'rgba(16, 185, 129, 0.1)', display: 'inline-flex', mb: 1 }}>
-                                <PlayCircle size={40} color="#10b981" />
-                            </Box>
-                            <Typography variant="body2" sx={{ fontWeight: 800, color: 'white' }}>INTERACTIVE SIMULATION</Typography>
-                        </Box>
-                        <Box sx={{ position: 'absolute', bottom: 16, right: 16, zIndex: 2 }}>
-                            <Button
-                                variant="contained"
-                                size="small"
-                                startIcon={<PlayCircle size={16} />}
-                                onClick={(e) => { e.stopPropagation(); setShowSim(true); }}
-                                sx={{
-                                    borderRadius: 10,
-                                    bgcolor: 'rgba(16, 185, 129, 0.7)',
-                                    backdropFilter: 'blur(10px)',
-                                    border: '1px solid rgba(255,255,255,0.2)',
-                                    fontWeight: 800,
-                                    fontSize: '0.65rem'
-                                }}
-                            >
-                                Start Simulation
-                            </Button>
                         </Box>
                     </Box>
                 ) : null}
@@ -574,12 +525,6 @@ export default function CultureCard({ entry }: CultureCardProps) {
                     title={entry.title}
                 />
             )}
-            {/* Simulation Modal */}
-            <SimulationModal
-                open={showSim}
-                onClose={() => setShowSim(false)}
-                entry={entry}
-            />
         </motion.div>
     );
 }

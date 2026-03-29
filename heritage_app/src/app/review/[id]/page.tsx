@@ -1,6 +1,6 @@
 'use client';
 
-import { useSimulation } from '@/theme/SimulationContext';
+import { useHeritage } from '@/theme/HeritageContext';
 import { useAuth } from '@/theme/AuthContext';
 import { calculateVoteWeight } from '@/lib/consensus';
 import { Typography, Container, Card, CardContent, Button, Box, Slider, Checkbox, FormControlLabel, TextField, Divider, Alert } from '@mui/material';
@@ -11,7 +11,7 @@ export default function ReviewDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const entryId = params?.id as string;
-    const { entries, submitValidationVote } = useSimulation();
+    const { entries, submitValidationVote } = useHeritage();
     const { user } = useAuth();
     const entry = entries.find(e => e.id === entryId);
 

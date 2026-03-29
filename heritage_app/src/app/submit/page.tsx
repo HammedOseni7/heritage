@@ -7,7 +7,7 @@ import { Share2, MapPin, CheckCircle2, Info } from 'lucide-react';
 import { CultureType } from '@/types';
 
 import Link from 'next/link';
-import { useSimulation } from '@/theme/SimulationContext';
+import { useHeritage } from '@/theme/HeritageContext';
 
 const CULTURE_TYPES: { value: CultureType; label: string }[] = [
     { value: 'story', label: 'Oral Story / Legend' },
@@ -21,7 +21,7 @@ const CULTURE_TYPES: { value: CultureType; label: string }[] = [
 export default function SubmitPage() {
     const [activeStep, setActiveStep] = useState(0);
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const { addEntry } = useSimulation();
+    const { addEntry } = useHeritage();
     const [formData, setFormData] = useState({
         title: '',
         type: 'story',
