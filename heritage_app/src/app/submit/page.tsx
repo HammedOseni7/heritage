@@ -8,6 +8,7 @@ import { CultureType } from '@/types';
 
 import Link from 'next/link';
 import { useHeritage } from '@/theme/HeritageContext';
+import { useAuth } from '@/theme/AuthContext';
 
 const CULTURE_TYPES: { value: CultureType; label: string }[] = [
     { value: 'story', label: 'Oral Story / Legend' },
@@ -19,6 +20,7 @@ const CULTURE_TYPES: { value: CultureType; label: string }[] = [
 ];
 
 export default function SubmitPage() {
+    const { user } = useAuth();
     const [activeStep, setActiveStep] = useState(0);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const { addEntry } = useHeritage();

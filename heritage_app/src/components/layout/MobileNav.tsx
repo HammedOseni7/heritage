@@ -2,12 +2,21 @@
 
 import React from 'react';
 import { Box, Paper, BottomNavigation, BottomNavigationAction } from '@mui/material';
-import { Home, Map, PlusCircle, History, User } from 'lucide-react';
+import { Home, Map, PlusCircle, History } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useAuth } from '@/theme/AuthContext';
 
 export default function MobileNav() {
+    const { user } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
+
+    const navItems = [
+        { label: 'Home', value: '/', icon: <Home size={22} /> },
+        { label: 'Map', value: '/map', icon: <Map size={22} /> },
+        ...(user ? [{ label: 'Share', value: '/submit', icon: <PlusCircle size={22} /> }] : []),
+        { label: 'Feeds', value: '/heritage', icon: <History size={22} /> },
+    ];
 
     return (
         <Box sx={{ display: { xs: 'block', md: 'none' }, position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000 }}>
@@ -37,10 +46,9 @@ export default function MobileNav() {
                         '& svg': { color: '#64748b' }
                     }}
                 >
-                    <BottomNavigationAction label="Home" value="/" icon={<Home size={22} />} />
-                    <BottomNavigationAction label="Map" value="/map" icon={<Map size={22} />} />
-                    <BottomNavigationAction label="Share" value="/submit" icon={<PlusCircle size={22} />} />
-                    <BottomNavigationAction label="Feeds" value="/feed" icon={<History size={22} />} />
+                    {navItems.map((item) => (
+                        <BottomNavigationAction key={item.value} label={item.label} value={item.value} icon={item.icon} />
+                    ))}
                 </BottomNavigation>
             </Paper>
         </Box>

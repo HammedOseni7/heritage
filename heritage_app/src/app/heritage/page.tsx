@@ -10,8 +10,10 @@ import PulsePanel from '@/components/layout/PulsePanel';
 import CategoryFilter from '@/components/feed/CategoryFilter';
 import { CulturalEntry, CultureType } from '@/types';
 import { useHeritage } from '@/theme/HeritageContext';
+import { useAuth } from '@/theme/AuthContext';
 
 export default function HeritagePage() {
+  const { user } = useAuth();
   const [selectedEntry, setSelectedEntry] = useState<CulturalEntry | null>(null);
   const [activeTab, setActiveTab] = useState<CultureType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,8 +55,16 @@ export default function HeritagePage() {
       if (selectedStatus !== 'All Status') {
         const isVerified = e.status === 'Community Verified' || e.isValidated === true || (e.validationCount && e.validationCount >= 5);
         if (selectedStatus === 'Community Verified' && !isVerified) return false;
-        if (selectedStatus === 'Pending' && isVerified) return false;
+        if (selectedStatus === 'Pending') {
+          if (!user || isVerified) return false;
+        }
         if (selectedStatus === 'Pending' && e.status === 'Needs Revision') return false;
+      }
+
+      // Hard gate: Public cannot see Pending even if status filter is "All Status"
+      if (!user) {
+        const isVerified = e.status === 'Community Verified' || e.isValidated === true || (e.validationCount && e.validationCount >= 5);
+        if (!isVerified) return false;
       }
 
       // Search Filter
@@ -106,7 +116,7 @@ export default function HeritagePage() {
                 >
                   <MenuItem value="All Status">All Records</MenuItem>
                   <MenuItem value="Community Verified">Verified</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
+                  {user && <MenuItem value="Pending">Pending</MenuItem>}
                 </Select>
               </Grid>
             </Grid>

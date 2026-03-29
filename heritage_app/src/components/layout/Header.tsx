@@ -59,7 +59,9 @@ export default function Header() {
                             <IconButton color="inherit" component={Link} href="/leaderboard"><Trophy size={20} /></IconButton>
                         </Tooltip>
                         <Box sx={{ width: '1px', height: 24, bgcolor: 'rgba(0,0,0,0.1)', mx: 1 }} />
-                        <Button component={Link} href="/submit" startIcon={<PlusCircle size={18} />} variant="contained" color="primary" sx={{ borderRadius: 10, fontWeight: 800 }}>Share Heritage</Button>
+                        {user && (
+                            <Button component={Link} href="/submit" startIcon={<PlusCircle size={18} />} variant="contained" color="primary" sx={{ borderRadius: 10, fontWeight: 800 }}>Share Heritage</Button>
+                        )}
                         <IconButton color="inherit"><Bell size={20} /></IconButton>
                         {user ? (
                             <Tooltip title="Your Profile">
@@ -124,17 +126,19 @@ export default function Header() {
                 <Divider sx={{ my: 4, opacity: 0.1 }} />
 
                 <Box sx={{ px: 1 }}>
-                    <Button
-                        fullWidth
-                        component={Link}
-                        href="/submit"
-                        variant="contained"
-                        startIcon={<PlusCircle size={20} />}
-                        onClick={() => setDrawerOpen(false)}
-                        sx={{ py: 2, borderRadius: 4, fontWeight: 900, mb: 2 }}
-                    >
-                        Share Heritage
-                    </Button>
+                    {user && (
+                        <Button
+                            fullWidth
+                            component={Link}
+                            href="/submit"
+                            variant="contained"
+                            startIcon={<PlusCircle size={20} />}
+                            onClick={() => setDrawerOpen(false)}
+                            sx={{ py: 2, borderRadius: 4, fontWeight: 900, mb: 2 }}
+                        >
+                            Share Heritage
+                        </Button>
+                    )}
                     {!user && (
                         <Button
                             fullWidth
