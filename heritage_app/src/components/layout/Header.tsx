@@ -1,8 +1,6 @@
-'use client';
-
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, Stack, Tooltip, Avatar } from '@mui/material';
-import { Globe, PlusCircle, Bell, UserCircle, Menu, Trophy, Search } from 'lucide-react';
+import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, Stack, Tooltip, Avatar, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider } from '@mui/material';
+import { Globe, PlusCircle, Bell, Menu, Trophy, Search, Home, History, User, X } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/theme/AuthContext';
 import SearchModal from './SearchModal';
@@ -11,6 +9,7 @@ export default function Header() {
     const { user } = useAuth();
     const [isScrolled, setIsScrolled] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     React.useEffect(() => {
         const handleScroll = () => {
@@ -19,6 +18,21 @@ export default function Header() {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
+        if (event.type === 'keydown' && ((event as React.KeyboardEvent).key === 'Tab' || (event as React.KeyboardEvent).key === 'Shift')) {
+            return;
+        }
+        setDrawerOpen(open);
+    };
+
+    const menuItems = [
+        { label: 'Home', href: '/', icon: <Home size={20} /> },
+        { label: 'View Heritage', href: '/heritage', icon: <History size={20} /> },
+        { label: 'World Map', href: '/map', icon: <Globe size={20} /> },
+        { label: 'Leaderboard', href: '/leaderboard', icon: <Trophy size={20} /> },
+        { label: 'Profile', href: '/profile', icon: <User size={20} /> },
+    ];
 
     return (
         <AppBar
@@ -65,14 +79,79 @@ export default function Header() {
                         )}
                     </Stack>
 
-                    <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
+                    <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 0.5 }}>
                         <IconButton color="inherit" onClick={() => setSearchOpen(true)}><Search size={22} /></IconButton>
-                        <IconButton color="inherit" component={Link} href="/map"><Globe size={22} /></IconButton>
-                        <IconButton color="inherit"><Bell size={22} /></IconButton>
-                        <IconButton color="inherit"><Menu size={22} /></IconButton>
+                        <IconButton color="inherit" onClick={toggleDrawer(true)}><Menu size={22} /></IconButton>
                     </Box>
                 </Toolbar>
             </Container>
+
+            {/* Mobile Drawer */}
+            <Drawer
+                anchor="right"
+                open={drawerOpen}
+                onClose={toggleDrawer(false)}
+                PaperProps={{
+                    sx: {
+                        width: 280,
+                        bgcolor: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                        padding: 2
+                    }
+                }}
+            >
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, pt: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '-0.5px' }}>NAVIGATION</Typography>
+                    <IconButton onClick={toggleDrawer(false)}><X size={24} /></IconButton>
+                </Box>
+
+                <List spacing={1}>
+                    {menuItems.map((item) => (
+                        <ListItem key={item.label} disablePadding sx={{ mb: 1 }}>
+                            <ListItemButton
+                                component={Link}
+                                href={item.href}
+                                onClick={toggleDrawer(false)}
+                                sx={{
+                                    borderRadius: 3,
+                                    '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.08)', '& svg': { color: '#6366f1' } }
+                                }}
+                            >
+                                <ListItemIcon sx={{ minWidth: 44 }}>{item.icon}</ListItemIcon>
+                                <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: 700, fontSize: '1rem' }} />
+                            </ListItemButton>
+                        </ListItem>
+                    ))}
+                </List>
+
+                <Divider sx={{ my: 4, opacity: 0.1 }} />
+
+                <Box sx={{ px: 1 }}>
+                    <Button
+                        fullWidth
+                        component={Link}
+                        href="/submit"
+                        variant="contained"
+                        startIcon={<PlusCircle size={20} />}
+                        onClick={toggleDrawer(false)}
+                        sx={{ py: 2, borderRadius: 4, fontWeight: 900, mb: 2 }}
+                    >
+                        Share Heritage
+                    </Button>
+                    {!user && (
+                        <Button
+                            fullWidth
+                            component={Link}
+                            href="/login"
+                            variant="outlined"
+                            onClick={toggleDrawer(false)}
+                            sx={{ py: 1.5, borderRadius: 4, fontWeight: 800, borderColor: 'rgba(0,0,0,0.1)', color: 'text.secondary' }}
+                        >
+                            Sign In
+                        </Button>
+                    )}
+                </Box>
+            </Drawer>
 
             {/* Global Search Interface */}
             <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
