@@ -21,13 +21,6 @@ export default function Header() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
-        if (event.type === 'keydown' && ((event as React.KeyboardEvent).key === 'Tab' || (event as React.KeyboardEvent).key === 'Shift')) {
-            return;
-        }
-        setDrawerOpen(open);
-    };
-
     const menuItems = [
         { label: 'Home', href: '/', icon: <Home size={20} /> },
         { label: 'View Heritage', href: '/heritage', icon: <History size={20} /> },
@@ -109,13 +102,13 @@ export default function Header() {
                     <IconButton onClick={() => setDrawerOpen(false)} sx={{ color: '#0f172a' }}><X size={24} /></IconButton>
                 </Box>
 
-                <List spacing={1}>
+                <List sx={{ pt: 0 }}>
                     {menuItems.map((item) => (
                         <ListItem key={item.label} disablePadding sx={{ mb: 1 }}>
                             <ListItemButton
                                 component={Link}
                                 href={item.href}
-                                onClick={toggleDrawer(false)}
+                                onClick={() => setDrawerOpen(false)}
                                 sx={{
                                     borderRadius: 3,
                                     '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.08)', '& svg': { color: '#6366f1' } }
@@ -137,7 +130,7 @@ export default function Header() {
                         href="/submit"
                         variant="contained"
                         startIcon={<PlusCircle size={20} />}
-                        onClick={toggleDrawer(false)}
+                        onClick={() => setDrawerOpen(false)}
                         sx={{ py: 2, borderRadius: 4, fontWeight: 900, mb: 2 }}
                     >
                         Share Heritage
@@ -148,7 +141,7 @@ export default function Header() {
                             component={Link}
                             href="/login"
                             variant="outlined"
-                            onClick={toggleDrawer(false)}
+                            onClick={() => setDrawerOpen(false)}
                             sx={{ py: 1.5, borderRadius: 4, fontWeight: 800, borderColor: 'rgba(0,0,0,0.1)', color: 'text.secondary' }}
                         >
                             Sign In
