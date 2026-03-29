@@ -83,7 +83,7 @@ export default function Header() {
 
                     <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 0.5 }}>
                         <IconButton color="inherit" onClick={() => setSearchOpen(true)}><Search size={22} /></IconButton>
-                        <IconButton color="inherit" onClick={toggleDrawer(true)}><Menu size={22} /></IconButton>
+                        <IconButton color="inherit" onClick={() => setDrawerOpen(true)}><Menu size={22} /></IconButton>
                     </Box>
                 </Toolbar>
             </Container>
@@ -92,19 +92,21 @@ export default function Header() {
             <Drawer
                 anchor="right"
                 open={drawerOpen}
-                onClose={toggleDrawer(false)}
+                onClose={() => setDrawerOpen(false)}
                 PaperProps={{
                     sx: {
                         width: 280,
-                        bgcolor: 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(20px)',
-                        padding: 2
+                        bgcolor: '#ffffff',
+                        backgroundImage: 'none',
+                        color: '#0f172a',
+                        padding: 3,
+                        boxShadow: '-10px 0 30px rgba(0,0,0,0.1)'
                     }
                 }}
             >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, pt: 1 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '-0.5px' }}>NAVIGATION</Typography>
-                    <IconButton onClick={toggleDrawer(false)}><X size={24} /></IconButton>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '-0.5px', color: '#0f172a' }}>MENU</Typography>
+                    <IconButton onClick={() => setDrawerOpen(false)} sx={{ color: '#0f172a' }}><X size={24} /></IconButton>
                 </Box>
 
                 <List spacing={1}>
