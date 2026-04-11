@@ -9,7 +9,7 @@ import {
     User as FirebaseUser,
     updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 export interface UserProfile {
@@ -22,12 +22,6 @@ export interface UserProfile {
     bio?: string;
     region?: string;
     country?: string;
-    isAdmin?: boolean;
-    isElderVerified?: boolean;
-    bypassValidation?: boolean;
-    badgeLevel?: string;
-    points?: number;
-    [key: string]: any; // allow any extra Firestore fields
 }
 
 interface AuthContextType {
@@ -49,8 +43,6 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const toUserProfile = (firebaseUser: FirebaseUser, extra?: Partial<UserProfile>): UserProfile => ({
-    // Spread all extra Firestore fields first (includes bypassValidation, isAdmin, etc.)
-    ...extra,
     id: firebaseUser.uid,
     email: firebaseUser.email || '',
     username: extra?.username || firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Guardian',
@@ -61,20 +53,6 @@ const toUserProfile = (firebaseUser: FirebaseUser, extra?: Partial<UserProfile>)
     region: extra?.region || '',
     country: extra?.country || '',
 });
-
-// Fetch user profile from Firestore — tries UID doc first, then falls back to email lookup (for seeded accounts like brolaja)
-async function fetchUserExtra(uid: string, email: string): Promise<Partial<UserProfile> | null> {
-    // 1. Try UID-based doc
-    const uidDoc = await getDoc(doc(db, 'users', uid));
-    if (uidDoc.exists()) return uidDoc.data() as Partial<UserProfile>;
-
-    // 2. Fallback: email-based lookup (handles seeded accounts with custom IDs)
-    const q = query(collection(db, 'users'), where('email', '==', email));
-    const snap = await getDocs(q);
-    if (!snap.empty) return snap.docs[0].data() as Partial<UserProfile>;
-
-    return null;
-}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<UserProfile | null>(null);
@@ -89,8 +67,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                 // Fetch extra data in the background (slower)
                 try {
-                    const extra = await fetchUserExtra(firebaseUser.uid, firebaseUser.email || '');
-                    if (extra) {
+                    const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+                    if (userDoc.exists()) {
+                        const extra = userDoc.data() as Partial<UserProfile>;
                         setUser(toUserProfile(firebaseUser, extra));
                     }
                 } catch (error: any) {
@@ -115,9 +94,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const basicProfile = toUserProfile(result.user);
         setUser(basicProfile);
 
-        // Fetch Firestore data in background to fill in bio/region/bypass flags
-        fetchUserExtra(result.user.uid, email).then(extra => {
-            if (extra) {
+        // Fetch Firestore data in background to fill in bio/region
+        getDoc(doc(db, 'users', result.user.uid)).then(userDoc => {
+            if (userDoc.exists()) {
+                const extra = userDoc.data() as Partial<UserProfile>;
                 setUser(toUserProfile(result.user, extra));
             }
         }).catch(err => {

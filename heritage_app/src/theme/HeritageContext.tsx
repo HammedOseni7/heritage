@@ -54,9 +54,6 @@ export const HeritageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, []);
 
     const addEntry = async (entry: Partial<CulturalEntry>) => {
-        // Check if this user has admin/bypass privileges (e.g. brolaja seed account)
-        const isBypassUser = user && (user as any).bypassValidation === true;
-
         const newEntry = {
             title: entry.title || 'Untitled',
             description: entry.description || '',
@@ -65,7 +62,7 @@ export const HeritageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             author: entry.author || {
                 name: user ? user.username : 'Anonymous Guardian',
                 avatar: user ? user.avatar : `https://i.pravatar.cc/150?u=anon`,
-                badges: isBypassUser ? ['Admin', 'Legacy Guardian'] : ['Contributor'],
+                badges: ['Contributor'],
             },
             location: entry.location || {
                 lat: (Math.random() * 120) - 60,
@@ -74,12 +71,10 @@ export const HeritageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 country: 'Unknown',
             },
             createdAt: new Date().toISOString(),
-            // Bypass users get instant Community Verified status
-            validationCount: isBypassUser ? 999 : 0,
+            validationCount: 0,
             invalidationCount: 0,
-            isValidated: isBypassUser ? true : false,
-            isElderVerified: isBypassUser ? true : false,
-            status: isBypassUser ? 'Community Verified' : 'Pending',
+            isValidated: false,
+            status: 'Pending',
             images: [],
             comments: [],
             ...entry,

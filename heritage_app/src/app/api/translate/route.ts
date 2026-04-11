@@ -1,4 +1,9 @@
 import { NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// Initialize Gemini
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 export async function POST(request: Request) {
     try {
@@ -8,25 +13,36 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Text is required' }, { status: 400 });
         }
 
-        // We'll use the MyMemory Free API for real translations
-        // API Docs: https://mymemory.translated.net/doc/spec.php
-        const response = await fetch(
-            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLanguage || 'es'}`
-        );
-
-        const data = await response.json();
-
-        if (data.responseData) {
-            return NextResponse.json({
-                translatedText: data.responseData.translatedText,
-                source: 'Heritage AI (MyMemory)'
+        if (!process.env.GEMINI_API_KEY) {
+            console.warn('GEMINI_API_KEY is missing. Falling back to simple response.');
+            return NextResponse.json({ 
+                translatedText: text, 
+                source: 'Baseline (API Key Missing)',
+                warning: 'Gemini API key not configured.'
             });
         }
 
-        return NextResponse.json({ error: 'Translation failed' }, { status: 500 });
+        const systemPrompt = `You are a professional linguistic expert specializing in World Heritage and cultural preservation.
+        
+        Task: Translate the following text into ${targetLanguage || 'Spanish'}.
+        Text to translate: "${text}"
+        
+        Rules:
+        1. Maintain the cultural nuance and respectful tone.
+        2. Ensure technical terms related to heritage, archeology, or traditions are translated accurately.
+        3. provide ONLY the translated text, no introductory or concluding remarks.`;
 
-    } catch (error) {
+        const result = await model.generateContent(systemPrompt);
+        const response = await result.response;
+        const translatedText = response.text().trim();
+
+        return NextResponse.json({
+            translatedText,
+            source: 'Heritage Hub AI (Gemini)'
+        });
+
+    } catch (error: any) {
         console.error('Translation Error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
     }
 }
