@@ -41,7 +41,7 @@ export default function SubmitPage() {
 
     const handleSubmit = async () => {
         try {
-            addEntry({
+            await addEntry({
                 title: formData.title,
                 type: formData.type as any,
                 description: formData.description,

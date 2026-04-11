@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { MOCK_ENTRIES } from '@/data/mockData';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, limit } from 'firebase/firestore';
 
@@ -18,26 +17,18 @@ export async function GET(request: Request) {
     }
 
     try {
-        // 1. Fetch live "Living Memory" from Firebase (Firestore)
-        let liveHubData = "";
+        // 1. Fetch live entries from Firestore
+        let groundingContext = "";
         try {
             const liveSnapshot = await getDocs(query(collection(db, "entries"), limit(5)));
             const liveEntries = liveSnapshot.docs.map(d => d.data() as any);
             if (liveEntries.length > 0) {
-                liveHubData = `Living Memory (Firebase): ${liveEntries.map(m => `[${m.title}: ${m.description}]`).join('; ')}`;
+                groundingContext = `Living Memory (Community Hub): ${liveEntries.map(m => `[${m.title}: ${m.description}]`).join('; ')}`;
             }
         } catch (e) { console.error('Silent Firebase fetch failure:', e); }
 
-        // 2. Check the "Collective Hub Memory" (MOCK_ENTRIES)
-        const hubMatches = MOCK_ENTRIES.filter(e => 
-            e.title.toLowerCase().includes(userQuery.toLowerCase()) || 
-            e.description.toLowerCase().includes(userQuery.toLowerCase())
-        ).slice(0, 3);
-
-        let groundingContext = `${liveHubData}${hubMatches.length > 0 ? ` Community Record: ${hubMatches.map(m => `[${m.title}: ${m.description}]`).join('; ')}` : ""}`;
-
-        // 2. Supplement with Wikipedia Grounding (only if no strong hub matches)
-        if (hubMatches.length === 0) {
+        // 2. Supplement with Wikipedia grounding if Firestore is empty
+        if (!groundingContext) {
             const searchRes = await fetch(
                 `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(userQuery)}&utf8=&format=json&origin=*`
             );
@@ -55,7 +46,7 @@ export async function GET(request: Request) {
             }
         }
 
-        // 3. Persona Reasoning via Gemini 2.5 Flash
+        // 3. Persona Reasoning via Gemini
         if (process.env.GEMINI_API_KEY) {
             const systemPrompt = `You are the "Heritage Hub Institutional Guardian." 
             Your role is to guide the user in discovering world heritage. 
@@ -74,12 +65,12 @@ export async function GET(request: Request) {
             return NextResponse.json({ answer: cleanText });
         }
 
-        // Fallback to Wikipedia logic if API key is missing
+        // Fallback if no Gemini API key
         if (!groundingContext) {
             return NextResponse.json({ answer: "I scoured the archives but found only whispers. Perhaps the region knows it by another name?" }, { status: 404 });
         }
 
-        const fallbackText = `Institutional Archive on ${query}: ${groundingContext.split('\n')[0]}`;
+        const fallbackText = `Institutional Archive on "${userQuery}": ${groundingContext.split('\n')[0]}`;
         return NextResponse.json({ answer: fallbackText + "\n\n(Note: Connect your Gemini API Key to unlock advanced storytelling mode.)" });
 
     } catch (error) {

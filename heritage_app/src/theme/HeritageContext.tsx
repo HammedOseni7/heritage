@@ -15,7 +15,6 @@ import {
 import { db } from '@/lib/firebase';
 import { CulturalEntry } from '@/types';
 import { useAuth } from '@/theme/AuthContext';
-import { MOCK_ENTRIES } from '@/data/mockData';
 
 interface HeritageContextType {
     entries: CulturalEntry[];
@@ -49,25 +48,15 @@ export const HeritageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 ...(d.data() as CulturalEntry),
                 id: d.id,
             }));
-            
-            // Hybrid logic: Merge Firestore data with MOCK_ENTRIES
-            // We prioritize Firestore data, and only add MOCK entries that don't exist by title
-            const combined = [...fetched];
-            MOCK_ENTRIES.forEach(mock => {
-                const alreadyExists = fetched.some(f => 
-                    f.title.toLowerCase() === mock.title.toLowerCase()
-                );
-                if (!alreadyExists) {
-                    combined.push(mock);
-                }
-            });
-
-            setEntries(combined);
+            setEntries(fetched);
         });
         return () => unsubscribe();
     }, []);
 
     const addEntry = async (entry: Partial<CulturalEntry>) => {
+        // Check if this user has admin/bypass privileges (e.g. brolaja seed account)
+        const isBypassUser = user && (user as any).bypassValidation === true;
+
         const newEntry = {
             title: entry.title || 'Untitled',
             description: entry.description || '',
@@ -76,7 +65,7 @@ export const HeritageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             author: entry.author || {
                 name: user ? user.username : 'Anonymous Guardian',
                 avatar: user ? user.avatar : `https://i.pravatar.cc/150?u=anon`,
-                badges: ['Contributor'],
+                badges: isBypassUser ? ['Admin', 'Legacy Guardian'] : ['Contributor'],
             },
             location: entry.location || {
                 lat: (Math.random() * 120) - 60,
@@ -85,10 +74,12 @@ export const HeritageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 country: 'Unknown',
             },
             createdAt: new Date().toISOString(),
-            validationCount: 0,
+            // Bypass users get instant Community Verified status
+            validationCount: isBypassUser ? 999 : 0,
             invalidationCount: 0,
-            isValidated: false,
-            status: 'Pending',
+            isValidated: isBypassUser ? true : false,
+            isElderVerified: isBypassUser ? true : false,
+            status: isBypassUser ? 'Community Verified' : 'Pending',
             images: [],
             comments: [],
             ...entry,
