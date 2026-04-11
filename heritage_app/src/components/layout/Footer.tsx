@@ -10,7 +10,7 @@ const FOOTER_LINKS = {
     { label: 'View Heritage', href: '/heritage' },
     { label: 'Global Map', href: '/map' },
     { label: 'Culture Types', href: '/heritage' },
-    { label: 'Community Pulsar', href: '/pulsar' },
+    { label: 'Community Pulsar', href: '/leaderboard' },
   ],
   contribute: [
     { label: 'Share Heritage', href: '/submit' },
@@ -19,7 +19,7 @@ const FOOTER_LINKS = {
     { label: 'Become a Guardian', href: '/register' },
   ],
   community: [
-    { label: 'Leaderboard', href: '/pulsar' },
+    { label: 'Leaderboard', href: '/leaderboard' },
     { label: 'Ethical Guidelines', href: '/legal' },
     { label: 'Institutional Partners', href: '/about' },
     { label: 'Developer API', href: '/docs' },
