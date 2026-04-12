@@ -1,39 +1,59 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Box, Container, Typography, Avatar, Paper, Stack, IconButton, Tabs, Tab, Grid } from '@mui/material';
-import { Trophy, Medal, MapPin, ChevronRight, TrendingUp } from 'lucide-react';
+import { Trophy, Medal, MapPin, ChevronRight, TrendingUp, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHeritage } from '@/theme/HeritageContext';
+import { useAuth, UserProfile } from '@/theme/AuthContext';
+import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 // Mock Top Users mixed with real user potential
-const TOP_GUARDIANS = [
-    { rank: 1, name: 'Elena Rojas', country: 'Argentina', points: 12450, tier: 'Legacy Guardian', avatar: 'https://i.pravatar.cc/150?u=10' },
-    { rank: 2, name: 'Moussa Diop', country: 'Senegal', points: 9800, tier: 'Heritage Keeper', avatar: 'https://i.pravatar.cc/150?u=11' },
-    { rank: 3, name: 'Tenzin Gyatso', country: 'Nepal', points: 8420, tier: 'Heritage Keeper', avatar: 'https://i.pravatar.cc/150?u=12' },
-    { rank: 4, name: 'Amina Okafor', country: 'Nigeria', points: 7100, tier: 'Cultural Spotter', avatar: 'https://i.pravatar.cc/150?u=13' },
-    { rank: 5, name: 'Kwame Mensah', country: 'Ghana', points: 6500, tier: 'Cultural Spotter', avatar: 'https://i.pravatar.cc/150?u=14' },
-    { rank: 6, name: 'Mateo Quispe', country: 'Peru', points: 5200, tier: 'Cultural Spotter', avatar: 'https://i.pravatar.cc/150?u=15' }
-];
 
 export default function LeaderboardPage() {
     const [tab, setTab] = useState(0);
     const { entries, userValidationsGiven } = useHeritage();
+    const { user: currentUser } = useAuth();
+    const [realGuardians, setRealGuardians] = useState<UserProfile[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Calculate live user stats to rank
-    const userEntries = entries.filter(e => e?.author?.name === 'You (Heritage Guardian)');
-    const totalImpact = userValidationsGiven * 10 + userEntries.length * 50;
+    // Fetch real users from Firestore
+    React.useEffect(() => {
+        const q = query(
+            collection(db, 'users'),
+            orderBy('points', 'desc'),
+            limit(20)
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const users = snapshot.docs.map(doc => doc.data() as UserProfile);
+            setRealGuardians(users);
+            setIsLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    const totalImpact = currentUser?.points || 0;
 
     // Filtered rankings logic
     const displayedGuardians = useMemo(() => {
-        let list = [...TOP_GUARDIANS];
-        if (tab === 1) { // This Month
-            list = list.slice(0, 4).map(u => ({ ...u, points: Math.floor(u.points * 0.4) }));
+        let list = realGuardians.map((u, i) => ({
+            rank: i + 1,
+            name: u.username,
+            country: u.country || 'Unknown',
+            points: u.points || 0,
+            tier: (u.points || 0) > 5000 ? 'Legacy Guardian' : (u.points || 0) > 1000 ? 'Heritage Keeper' : 'Cultural Spotter',
+            avatar: u.avatar
+        }));
+
+        if (tab === 1) { // This Month (Mocking temporal filter as we don't have temporal points yet)
+            list = list.slice(0, 10).map(u => ({ ...u, points: Math.floor(u.points * 0.4) }));
         } else if (tab === 2) { // Regional
-            list = list.filter(u => u.country === 'Nigeria' || u.country === 'Senegal' || u.country === 'Ghana');
+            list = list.filter(u => ['Nigeria', 'Senegal', 'Ghana', 'Kenya', 'Ethiopia'].includes(u.country));
         }
+        
         return list.sort((a, b) => b.points - a.points).map((u, i) => ({ ...u, rank: i + 1 }));
-    }, [tab]);
+    }, [tab, realGuardians]);
 
     const getRankColor = (rank: number) => {
         if (rank === 1) return '#fbbf24'; // Gold
@@ -119,70 +139,76 @@ export default function LeaderboardPage() {
                 </AnimatePresence>
 
                 {/* List */}
-                <Stack spacing={2}>
-                    <AnimatePresence mode="popLayout">
-                        {displayedGuardians.map((user) => (
-                            <motion.div key={user.name} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.2 }}>
-                                <Paper sx={{
-                                    p: 2, px: 3,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                    borderRadius: 4,
-                                    bgcolor: user.rank <= 3 && tab === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)',
-                                    border: '1px solid rgba(255,255,255,0.05)',
-                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' }
-                                }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                                        <Typography variant="h6" sx={{ fontWeight: 900, color: getRankColor(user.rank), minWidth: 24, textAlign: 'center' }}>
-                                            {user.rank}
-                                        </Typography>
-                                        <Avatar src={user.avatar} sx={{ width: 48, height: 48, border: `2px solid ${getRankColor(user.rank)}` }} />
-                                        <Box>
-                                            <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>{user.name}</Typography>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <MapPin size={12} color="rgba(255,255,255,0.5)" />
-                                                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>{user.country}</Typography>
-                                                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.2)', mx: 0.5 }}>•</Typography>
-                                                <Typography variant="caption" sx={{ color: '#6366f1', fontWeight: 700 }}>{user.tier}</Typography>
+                {isLoading ? (
+                    <Box sx={{ py: 10, textAlign: 'center' }}>
+                        <Loader2 className="animate-spin" size={48} color="#fbbf24" style={{ margin: '0 auto' }} />
+                        <Typography sx={{ mt: 2, color: 'rgba(255,255,255,0.5)' }}>Gathering Guardians...</Typography>
+                    </Box>
+                ) : (
+                    <Stack spacing={2}>
+                        <AnimatePresence mode="popLayout">
+                            {displayedGuardians.map((user) => (
+                                <motion.div key={user.name} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.2 }}>
+                                    <Paper sx={{
+                                        p: 2, px: 3,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                        borderRadius: 4,
+                                        bgcolor: user.rank <= 3 && tab === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)',
+                                        border: '1px solid rgba(255,255,255,0.05)',
+                                        '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' }
+                                    }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                            <Typography variant="h6" sx={{ fontWeight: 900, color: getRankColor(user.rank), minWidth: 24, textAlign: 'center' }}>
+                                                {user.rank}
+                                            </Typography>
+                                            <Avatar src={user.avatar} sx={{ width: 48, height: 48, border: `2px solid ${getRankColor(user.rank)}` }} />
+                                            <Box>
+                                                <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>{user.name}</Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <MapPin size={12} color="rgba(255,255,255,0.5)" />
+                                                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>{user.country}</Typography>
+                                                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.2)', mx: 0.5 }}>•</Typography>
+                                                    <Typography variant="caption" sx={{ color: '#6366f1', fontWeight: 700 }}>{user.tier}</Typography>
+                                                </Box>
                                             </Box>
                                         </Box>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                                        <Box sx={{ textAlign: 'right' }}>
-                                            <Typography variant="h6" sx={{ fontWeight: 900, color: '#fbbf24', lineHeight: 1 }}>
-                                                {user.points.toLocaleString()}
-                                            </Typography>
-                                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                <TrendingUp size={12} color="#10b981" /> +120
-                                            </Typography>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                            <Box sx={{ textAlign: 'right' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 900, color: '#fbbf24', lineHeight: 1 }}>
+                                                    {user.points.toLocaleString()}
+                                                </Typography>
+                                            </Box>
+                                            <IconButton size="small" sx={{ bgcolor: 'rgba(255,255,255,0.05)' }}>
+                                                <ChevronRight size={18} />
+                                            </IconButton>
                                         </Box>
-                                        <IconButton size="small" sx={{ bgcolor: 'rgba(255,255,255,0.05)' }}>
-                                            <ChevronRight size={18} />
-                                        </IconButton>
-                                    </Box>
-                                </Paper>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
+                                    </Paper>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
 
-                    {/* Current User Fixed at Bottom */}
-                    <Box sx={{ mt: 4, p: 3, borderRadius: 4, bgcolor: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                            <Typography variant="h6" sx={{ fontWeight: 900, color: 'white', minWidth: 24, textAlign: 'center' }}>
-                                #?
-                            </Typography>
-                            <Avatar src="https://i.pravatar.cc/150?u=you" sx={{ width: 48, height: 48, border: `2px solid #6366f1` }} />
-                            <Box>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>You</Typography>
-                                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>Submit more entries to climb the ranks!</Typography>
+                        {/* Current User Fixed at Bottom */}
+                        {currentUser && (
+                            <Box sx={{ mt: 4, p: 3, borderRadius: 4, bgcolor: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 900, color: 'white', minWidth: 24, textAlign: 'center' }}>
+                                        # {realGuardians.findIndex(u => u.id === currentUser.id) + 1 || '?'}
+                                    </Typography>
+                                    <Avatar src={currentUser.avatar} sx={{ width: 48, height: 48, border: `2px solid #6366f1` }} />
+                                    <Box>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>{currentUser.username} (You)</Typography>
+                                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>Keep contributing to rise higher!</Typography>
+                                    </Box>
+                                </Box>
+                                <Box sx={{ textAlign: 'right' }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 900, color: '#a5b4fc', lineHeight: 1 }}>
+                                        {totalImpact} <span style={{ fontSize: '0.6em', opacity: 0.7 }}>pts</span>
+                                    </Typography>
+                                </Box>
                             </Box>
-                        </Box>
-                        <Box sx={{ textAlign: 'right' }}>
-                            <Typography variant="h6" sx={{ fontWeight: 900, color: '#a5b4fc', lineHeight: 1 }}>
-                                {totalImpact} <span style={{ fontSize: '0.6em', opacity: 0.7 }}>pts</span>
-                            </Typography>
-                        </Box>
-                    </Box>
-                </Stack>
+                        )}
+                    </Stack>
+                )}
             </Container>
         </Box>
     );

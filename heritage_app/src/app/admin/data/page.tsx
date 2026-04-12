@@ -16,7 +16,13 @@ import {
     AccordionDetails,
     Grid,
     Tooltip,
-    Stack
+    Stack,
+    FormControlLabel,
+    Checkbox,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel
 } from '@mui/material';
 import { 
     ArrowLeft, 
@@ -29,7 +35,8 @@ import {
     AlertCircle,
     Layout,
     MapPin,
-    Users
+    Users,
+    Settings
 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -43,32 +50,55 @@ export default function BulkUploadPage() {
     const [isUploading, setIsUploading] = useState(false);
     const [progress, setProgress] = useState(0);
     const [copied, setCopied] = useState(false);
+    const [templateConfig, setTemplateConfig] = useState({
+        includeAuthor: true,
+        includeLocation: true,
+        includeMetadata: true,
+        includeImages: true,
+        type: 'craft' as string
+    });
 
-    const JSON_TEMPLATE = [
-        {
-            "title": "Historical Adire Textile",
-            "description": "Indig-dyed cloth made by Yaruba women...",
-            "content": "Full historical documentation...",
-            "type": "craft",
-            "author": {
-                "name": "Heritage Admin",
-                "avatar": "https://i.pravatar.cc/150?u=admin",
-                "badges": ["Expert"]
-            },
-            "location": {
-                "lat": 7.15,
-                "lng": 3.35,
-                "city": "Abeokuta",
-                "country": "Nigeria"
-            },
-            "metadata": {
-                "tribe": "Yoruba",
-                "theme": "Traditional Craft",
-                "region": "West Africa"
-            },
-            "images": ["https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?q=80&w=1000"]
+    const generateTemplate = () => {
+        const item: any = {
+            title: "Sample Heritage Title",
+            description: "A brief description of the heritage...",
+            content: "Full historical context and details...",
+            type: templateConfig.type,
+        };
+
+        if (templateConfig.includeAuthor) {
+            item.author = {
+                name: "Heritage Admin",
+                avatar: "https://i.pravatar.cc/150?u=admin",
+                badges: ["Expert"]
+            };
         }
-    ];
+
+        if (templateConfig.includeLocation) {
+            item.location = {
+                lat: 7.15,
+                lng: 3.35,
+                city: "Abeokuta",
+                country: "Nigeria"
+            };
+        }
+
+        if (templateConfig.includeMetadata) {
+            item.metadata = {
+                tribe: "Local Tribe",
+                theme: "Culture",
+                region: "West Africa"
+            };
+        }
+
+        if (templateConfig.includeImages) {
+            item.images = ["https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?q=80&w=1000"];
+        }
+
+        return [item];
+    };
+
+    const JSON_TEMPLATE = generateTemplate();
 
     const copyTemplate = () => {
         navigator.clipboard.writeText(JSON.stringify(JSON_TEMPLATE, null, 2));
@@ -232,6 +262,55 @@ export default function BulkUploadPage() {
 
                     <Grid size={{ xs: 12, md: 5 }}>
                         <Stack spacing={3}>
+                            <Paper sx={{ p: 3, bgcolor: 'rgba(255,255,255,0.03)', borderRadius: 5, border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <Typography variant="subtitle2" sx={{ color: '#818cf8', fontWeight: 900, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Settings size={16} /> CUSTOMIZE TEMPLATE
+                                </Typography>
+                                
+                                <Grid container spacing={1}>
+                                    <Grid size={{ xs: 12 }}>
+                                        <FormControl fullWidth size="small" sx={{ mb: 2, '& .MuiOutlinedInput-root': { color: 'white', bgcolor: 'rgba(255,255,255,0.05)' } }}>
+                                            <InputLabel sx={{ color: 'rgba(255,255,255,0.5)' }}>Content Type</InputLabel>
+                                            <Select
+                                                value={templateConfig.type}
+                                                label="Content Type"
+                                                onChange={(e) => setTemplateConfig(prev => ({ ...prev, type: e.target.value }))}
+                                            >
+                                                <MenuItem value="craft">Artifact/Craft</MenuItem>
+                                                <MenuItem value="festival">Festival/Ritual</MenuItem>
+                                                <MenuItem value="story">Oral History/Story</MenuItem>
+                                                <MenuItem value="medicine">Traditional Medicine</MenuItem>
+                                                <MenuItem value="cuisine">Cuisine/Recipe</MenuItem>
+                                            </Select>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid size={{ xs: 6 }}>
+                                        <FormControlLabel 
+                                            control={<Checkbox size="small" checked={templateConfig.includeAuthor} onChange={(e) => setTemplateConfig(prev => ({ ...prev, includeAuthor: e.target.checked }))} />} 
+                                            label={<Typography variant="caption" sx={{ color: 'white' }}>Author</Typography>} 
+                                        />
+                                    </Grid>
+                                    <Grid size={{ xs: 6 }}>
+                                        <FormControlLabel 
+                                            control={<Checkbox size="small" checked={templateConfig.includeLocation} onChange={(e) => setTemplateConfig(prev => ({ ...prev, includeLocation: e.target.checked }))} />} 
+                                            label={<Typography variant="caption" sx={{ color: 'white' }}>Location</Typography>} 
+                                        />
+                                    </Grid>
+                                    <Grid size={{ xs: 6 }}>
+                                        <FormControlLabel 
+                                            control={<Checkbox size="small" checked={templateConfig.includeMetadata} onChange={(e) => setTemplateConfig(prev => ({ ...prev, includeMetadata: e.target.checked }))} />} 
+                                            label={<Typography variant="caption" sx={{ color: 'white' }}>Metadata</Typography>} 
+                                        />
+                                    </Grid>
+                                    <Grid size={{ xs: 6 }}>
+                                        <FormControlLabel 
+                                            control={<Checkbox size="small" checked={templateConfig.includeImages} onChange={(e) => setTemplateConfig(prev => ({ ...prev, includeImages: e.target.checked }))} />} 
+                                            label={<Typography variant="caption" sx={{ color: 'white' }}>Images</Typography>} 
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </Paper>
+
                             <Paper sx={{ p: 3, bgcolor: 'rgba(255,255,255,0.03)', borderRadius: 5, border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <Typography variant="subtitle2" sx={{ color: '#818cf8', fontWeight: 900, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <Info size={16} /> MIGRATION GUIDE

@@ -40,6 +40,13 @@ export const HeritageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const [userRewardPoints, setUserRewardPoints] = useState(0);
     const [currentYear, setCurrentYear] = useState<number>(2024);
 
+    // Initialize points from auth user
+    useEffect(() => {
+        if (user) {
+            setUserRewardPoints(user.points || 0);
+        }
+    }, [user]);
+
     // Real-time Firestore listener
     useEffect(() => {
         const q = query(collection(db, ENTRIES_COLLECTION), orderBy('createdAt', 'desc'));
@@ -107,7 +114,15 @@ export const HeritageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             status: isApproved ? 'Community Verified' : entry.status,
         });
         setUserValidationsGiven((prev) => prev + 1);
-        setUserRewardPoints((prev) => prev + 15);
+        const newPoints = userRewardPoints + 15;
+        setUserRewardPoints(newPoints);
+        
+        // Persist to Firestore if user is logged in
+        if (user) {
+            await updateDoc(doc(db, 'users', user.id), {
+                points: newPoints
+            });
+        }
     };
 
     const invalidateEntry = async (id: string) => {

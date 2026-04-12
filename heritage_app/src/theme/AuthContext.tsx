@@ -23,6 +23,7 @@ export interface UserProfile {
     bio?: string;
     region?: string;
     country?: string;
+    points: number;
 }
 
 interface AuthContextType {
@@ -54,6 +55,7 @@ const toUserProfile = (firebaseUser: FirebaseUser, extra?: Partial<UserProfile>)
     bio: extra?.bio || '',
     region: extra?.region || '',
     country: extra?.country || '',
+    points: extra?.points || 0,
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -158,6 +160,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             bio: extra?.bio || '',
             region: extra?.region || '',
             country: extra?.country || '',
+            points: 0,
         };
         await setDoc(doc(db, 'users', uid), profile);
         setUser(profile);
