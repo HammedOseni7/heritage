@@ -15,7 +15,8 @@ import {
     AccordionSummary,
     AccordionDetails,
     Grid,
-    Tooltip
+    Tooltip,
+    Stack
 } from '@mui/material';
 import { 
     ArrowLeft, 
@@ -159,7 +160,7 @@ export default function BulkUploadPage() {
                 </Stack>
 
                 <Grid container spacing={4}>
-                    <Grid item xs={12} md={7}>
+                    <Grid size={{ xs: 12, md: 7 }}>
                         <Paper sx={{ p: 4, bgcolor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
                             <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
                                 <Database color="#6366f1" size={24} />
@@ -229,7 +230,7 @@ export default function BulkUploadPage() {
                         </Paper>
                     </Grid>
 
-                    <Grid item xs={12} md={5}>
+                    <Grid size={{ xs: 12, md: 5 }}>
                         <Stack spacing={3}>
                             <Paper sx={{ p: 3, bgcolor: 'rgba(255,255,255,0.03)', borderRadius: 5, border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <Typography variant="subtitle2" sx={{ color: '#818cf8', fontWeight: 900, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
