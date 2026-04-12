@@ -56,6 +56,7 @@ export default function BulkUploadPage() {
             try {
                 const entry = data[i];
                 // basic validation/cleanup
+                const images = entry.images || (entry.image ? [entry.image] : (entry.imageUrl ? [entry.imageUrl] : []));
                 const newEntry = {
                     ...entry,
                     createdAt: entry.createdAt || new Date().toISOString(),
@@ -64,7 +65,7 @@ export default function BulkUploadPage() {
                     isValidated: entry.isValidated || false,
                     status: entry.status || 'Pending',
                     comments: entry.comments || [],
-                    images: entry.images || [],
+                    images: images,
                 };
 
                 // Remove ID if present to let Firestore generate a new one
@@ -131,7 +132,7 @@ export default function BulkUploadPage() {
                         multiline
                         rows={15}
                         fullWidth
-                        placeholder='[{"title": "Ancient Weaving", "description": "...", "type": "craft", ...}]'
+                        placeholder='[{"title": "Ancient Weaving", "description": "...", "type": "craft", "image": "https://example.com/image.jpg", ...}]'
                         value={jsonInput}
                         onChange={(e) => setJsonInput(e.target.value)}
                         variant="outlined"
