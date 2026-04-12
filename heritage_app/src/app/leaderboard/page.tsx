@@ -97,18 +97,18 @@ export default function LeaderboardPage() {
 
                 {/* Top 3 Podium (Only visible on All-Time for visual impact) */}
                 <AnimatePresence mode="wait">
-                    {tab === 0 && (
+                    {tab === 0 && displayedGuardians.length >= 3 && (
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4 }}>
                             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3, mb: 10, alignItems: 'flex-end', width: '100%', mt: 10 }}>
                                 {/* Rank 2 */}
                                 <Box sx={{ flex: 1 }}>
                                     <Paper sx={{ p: 4, pt: 6, textAlign: 'center', borderRadius: 6, bgcolor: 'rgba(148, 163, 184, 0.1)', border: '2px solid rgba(148, 163, 184, 0.3)', position: 'relative' }}>
                                         <Box sx={{ position: 'absolute', top: -32, left: '50%', transform: 'translateX(-50%)' }}>
-                                            <Avatar src={displayedGuardians[1].avatar} sx={{ width: 80, height: 80, border: '4px solid #94a3b8' }} />
+                                            <Avatar src={displayedGuardians[1]?.avatar} sx={{ width: 80, height: 80, border: '4px solid #94a3b8' }} />
                                             <Box sx={{ position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)', bgcolor: '#94a3b8', color: '#0f172a', fontWeight: 900, px: 1.5, borderRadius: 10, fontSize: '0.8rem' }}>2</Box>
                                         </Box>
-                                        <Typography variant="h6" sx={{ fontWeight: 800, mt: 2 }}>{displayedGuardians[1].name}</Typography>
-                                        <Typography variant="body2" sx={{ color: '#fbbf24', fontWeight: 700 }}>{displayedGuardians[1].points.toLocaleString()} pts</Typography>
+                                        <Typography variant="h6" sx={{ fontWeight: 800, mt: 2 }}>{displayedGuardians[1]?.name}</Typography>
+                                        <Typography variant="body2" sx={{ color: '#fbbf24', fontWeight: 700 }}>{displayedGuardians[1]?.points.toLocaleString()} pts</Typography>
                                     </Paper>
                                 </Box>
 
@@ -116,11 +116,11 @@ export default function LeaderboardPage() {
                                 <Box sx={{ flex: 1 }}>
                                     <Paper sx={{ p: 4, pt: 8, textAlign: 'center', borderRadius: 6, bgcolor: 'rgba(251, 191, 36, 0.15)', border: '2px solid rgba(251, 191, 36, 0.5)', position: 'relative', boxShadow: '0 0 40px rgba(251, 191, 36, 0.2)' }}>
                                         <Box sx={{ position: 'absolute', top: -48, left: '50%', transform: 'translateX(-50%)' }}>
-                                            <Avatar src={displayedGuardians[0].avatar} sx={{ width: 100, height: 100, border: '6px solid #fbbf24' }} />
+                                            <Avatar src={displayedGuardians[0]?.avatar} sx={{ width: 100, height: 100, border: '6px solid #fbbf24' }} />
                                             <Box sx={{ position: 'absolute', bottom: -12, left: '50%', transform: 'translateX(-50%)', bgcolor: '#fbbf24', color: '#0f172a', fontWeight: 900, px: 2, py: 0.5, borderRadius: 10, fontSize: '1rem' }}>1</Box>
                                         </Box>
-                                        <Typography variant="h5" sx={{ fontWeight: 900, mt: 2 }}>{displayedGuardians[0].name}</Typography>
-                                        <Typography variant="body1" sx={{ color: '#fbbf24', fontWeight: 800 }}>{displayedGuardians[0].points.toLocaleString()} pts</Typography>
+                                        <Typography variant="h5" sx={{ fontWeight: 900, mt: 2 }}>{displayedGuardians[0]?.name}</Typography>
+                                        <Typography variant="body1" sx={{ color: '#fbbf24', fontWeight: 800 }}>{displayedGuardians[0]?.points.toLocaleString()} pts</Typography>
                                     </Paper>
                                 </Box>
 
@@ -128,11 +128,11 @@ export default function LeaderboardPage() {
                                 <Box sx={{ flex: 1 }}>
                                     <Paper sx={{ p: 4, pt: 5, textAlign: 'center', borderRadius: 6, bgcolor: 'rgba(180, 83, 9, 0.1)', border: '2px solid rgba(180, 83, 9, 0.3)', position: 'relative' }}>
                                         <Box sx={{ position: 'absolute', top: -28, left: '50%', transform: 'translateX(-50%)' }}>
-                                            <Avatar src={displayedGuardians[2].avatar} sx={{ width: 70, height: 70, border: '4px solid #b45309' }} />
+                                            <Avatar src={displayedGuardians[2]?.avatar} sx={{ width: 70, height: 70, border: '4px solid #b45309' }} />
                                             <Box sx={{ position: 'absolute', bottom: -8, left: '50%', transform: 'translateX(-50%)', bgcolor: '#b45309', color: 'white', fontWeight: 900, px: 1.5, borderRadius: 10, fontSize: '0.75rem' }}>3</Box>
                                         </Box>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, mt: 2 }}>{displayedGuardians[2].name}</Typography>
-                                        <Typography variant="body2" sx={{ color: '#fbbf24', fontWeight: 700 }}>{displayedGuardians[2].points.toLocaleString()} pts</Typography>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 800, mt: 2 }}>{displayedGuardians[2]?.name}</Typography>
+                                        <Typography variant="body2" sx={{ color: '#fbbf24', fontWeight: 700 }}>{displayedGuardians[2]?.points.toLocaleString()} pts</Typography>
                                     </Paper>
                                 </Box>
                             </Box>
