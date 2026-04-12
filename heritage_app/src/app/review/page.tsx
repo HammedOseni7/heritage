@@ -39,7 +39,12 @@ export default function ReviewQueuePage() {
                                         <Typography variant="h6" fontWeight="bold">
                                             {entry.title}
                                         </Typography>
-                                        <Chip label="Pending Review" color="warning" size="small" />
+                                        <Chip 
+                                            label={((entry.images && entry.images.length > 0) || entry.videoUrl) ? "Pending Review" : "Pending (No Image)"} 
+                                            color={((entry.images && entry.images.length > 0) || entry.videoUrl) ? "warning" : "error"} 
+                                            size="small" 
+                                            sx={{ fontWeight: 800 }}
+                                        />
                                     </Box>
                                     <Typography variant="body2" color="text.secondary" noWrap sx={{ mb: 2 }}>
                                         {entry.description}
