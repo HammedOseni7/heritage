@@ -18,7 +18,7 @@ export default function DocsPage() {
             <Box sx={{ pt: 20, pb: 10, background: 'radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.1), transparent 40%)' }}>
                 <Container maxWidth="lg">
                     <Grid container spacing={8} alignItems="center">
-                        <Grid item xs={12} md={7}>
+                        <Grid size={{ xs: 12, md: 7 }}>
                             <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}>
                                 <Chip label="BETA ACCESS" sx={{ bgcolor: '#6366f1', color: 'white', fontWeight: 900, mb: 3 }} />
                                 <Typography variant="h2" sx={{ fontWeight: 900, mb: 3, letterSpacing: '-2px' }}>
@@ -37,7 +37,7 @@ export default function DocsPage() {
                                 </Stack>
                             </motion.div>
                         </Grid>
-                        <Grid item xs={12} md={5}>
+                        <Grid size={{ xs: 12, md: 5 }}>
                             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
                                 <Card sx={{ 
                                     bgcolor: '#0f172a', 
@@ -72,7 +72,7 @@ export default function DocsPage() {
                 <Typography variant="h4" sx={{ fontWeight: 900, mb: 6 }}>Quick Reference</Typography>
                 <Grid container spacing={4}>
                     {endpoints.map((ep, i) => (
-                        <Grid item xs={12} key={i}>
+                        <Grid size={{ xs: 12 }} key={i}>
                             <Card sx={{ 
                                 p: 3, 
                                 bgcolor: 'rgba(255,255,255,0.02)', 
@@ -102,21 +102,21 @@ export default function DocsPage() {
             {/* Features */}
             <Container maxWidth="lg" sx={{ mt: 12 }}>
                 <Grid container spacing={4}>
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                         <Stack spacing={2}>
                             <Zap size={32} color="#f59e0b" />
                             <Typography variant="h6" sx={{ fontWeight: 800 }}>Real-time Sync</Typography>
                             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)' }}>Websocket support for live updates as heritage entries are verified by the community.</Typography>
                         </Stack>
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                         <Stack spacing={2}>
                             <Globe size={32} color="#6366f1" />
                             <Typography variant="h6" sx={{ fontWeight: 800 }}>Global CDN</Typography>
                             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)' }}>Low-latency data access through our global heritage nodes.</Typography>
                         </Stack>
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                         <Stack spacing={2}>
                             <Lock size={32} color="#10b981" />
                             <Typography variant="h6" sx={{ fontWeight: 800 }}>Secure Access</Typography>

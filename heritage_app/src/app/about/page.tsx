@@ -58,7 +58,7 @@ export default function AboutPage() {
             <Container maxWidth="lg" sx={{ mb: 12 }}>
                 <Grid container spacing={4}>
                     {stats.map((stat, index) => (
-                        <Grid item xs={12} md={4} key={index}>
+                        <Grid size={{ xs: 12, md: 4 }} key={index}>
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -91,7 +91,7 @@ export default function AboutPage() {
                 <Typography variant="h4" sx={{ fontWeight: 900, mb: 8, textAlign: 'center' }}>Our Core Pillars</Typography>
                 <Grid container spacing={6}>
                     {missionPoints.map((point, index) => (
-                        <Grid item xs={12} md={4} key={index}>
+                        <Grid size={{ xs: 12, md: 4 }} key={index}>
                             <motion.div
                                 initial={{ opacity: 0, x: -20 }}
                                 whileInView={{ opacity: 1, x: 0 }}
@@ -128,7 +128,7 @@ export default function AboutPage() {
                     </Typography>
                     <Grid container spacing={4} justifyContent="center" alignItems="center">
                         {[1, 2, 3, 4].map((i) => (
-                            <Grid item xs={6} md={3} key={i}>
+                            <Grid size={{ xs: 6, md: 3 }} key={i}>
                                 <Box sx={{ 
                                     height: 60, 
                                     bgcolor: 'rgba(255,255,255,0.03)', 

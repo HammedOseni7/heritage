@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Container, Typography, Box, Grid, Stack, Paper, IconButton } from '@mui/material';
-import { Upload, CheckCircle, Search, MessageSquare, AlertCircle, Camera, PenTool, MapPin } from 'lucide-react';
+import { Upload, CheckCircle, Search, MessageSquare, AlertCircle, Camera, PenTool, MapPin, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const steps = [
@@ -64,7 +64,7 @@ export default function GuidePage() {
             <Container maxWidth="lg">
                 <Grid container spacing={4}>
                     {steps.map((step, index) => (
-                        <Grid item xs={12} md={6} key={index}>
+                        <Grid size={{ xs: 12, md: 6 }} key={index}>
                             <motion.div
                                 initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
                                 whileInView={{ opacity: 1, x: 0 }}
@@ -123,21 +123,21 @@ export default function GuidePage() {
                 <Box sx={{ mt: 12, p: 6, bgcolor: 'rgba(99, 102, 241, 0.05)', borderRadius: 6, border: '1px dashed rgba(99, 102, 241, 0.2)' }}>
                     <Typography variant="h4" sx={{ fontWeight: 900, mb: 6, textAlign: 'center' }}>Content Standards</Typography>
                     <Grid container spacing={4}>
-                        <Grid item xs={12} md={4}>
+                        <Grid size={{ xs: 12, md: 4 }}>
                             <Stack spacing={2} alignItems="center" sx={{ textAlign: 'center' }}>
                                 <AlertCircle color="#6366f1" size={32} />
                                 <Typography variant="h6" sx={{ fontWeight: 800 }}>Authenticity</Typography>
                                 <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)' }}>Only submit content that is historically accurate or genuine cultural expression.</Typography>
                             </Stack>
                         </Grid>
-                        <Grid item xs={12} md={4}>
+                        <Grid size={{ xs: 12, md: 4 }}>
                             <Stack spacing={2} alignItems="center" sx={{ textAlign: 'center' }}>
                                 <Shield color="#10b981" size={32} />
                                 <Typography variant="h6" sx={{ fontWeight: 800 }}>Ethical Respect</Typography>
                                 <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)' }}>Respect the privacy and sacred nature of certain rituals or community information.</Typography>
                             </Stack>
                         </Grid>
-                        <Grid item xs={12} md={4}>
+                        <Grid size={{ xs: 12, md: 4 }}>
                             <Stack spacing={2} alignItems="center" sx={{ textAlign: 'center' }}>
                                 <CheckCircle color="#ec4899" size={32} />
                                 <Typography variant="h6" sx={{ fontWeight: 800 }}>Clarity</Typography>
