@@ -281,6 +281,7 @@ export default function BulkUploadPage() {
                                                 <MenuItem value="story">Oral History/Story</MenuItem>
                                                 <MenuItem value="medicine">Traditional Medicine</MenuItem>
                                                 <MenuItem value="cuisine">Cuisine/Recipe</MenuItem>
+                                                <MenuItem value="game">Traditional Games</MenuItem>
                                             </Select>
                                         </FormControl>
                                     </Grid>
