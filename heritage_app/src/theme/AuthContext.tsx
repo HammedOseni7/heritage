@@ -37,6 +37,7 @@ interface AuthContextType {
         extra?: { bio?: string; region?: string; country?: string }
     ) => Promise<void>;
     logout: () => Promise<void>;
+    updateProfileData: (updates: Partial<UserProfile>, fFile?: File | null) => Promise<void>;
     isLoading: boolean;
 }
 
@@ -165,8 +166,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
     };
 
+    const updateProfileData = async (updates: Partial<UserProfile>, avatarFile?: File | null) => {
+        if (!auth.currentUser || !user) return;
+        
+        let avatarUrl = user.avatar;
+        
+        if (avatarFile) {
+            const formData = new FormData();
+            formData.append('image', avatarFile);
+            const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+            try {
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await response.json();
+                if (data.success) {
+                    avatarUrl = data.data.url;
+                }
+            } catch (error) {
+                console.error('Imgbb upload failed for update:', error);
+            }
+        }
+
+        const newAvatarUrl = avatarUrl !== user.avatar ? avatarUrl : undefined;
+        if (newAvatarUrl || updates.username) {
+            await updateProfile(auth.currentUser, {
+                ...(updates.username && { displayName: updates.username }),
+                ...(newAvatarUrl && { photoURL: newAvatarUrl }),
+            });
+        }
+
+        const updatedUser = { ...user, ...updates, ...(newAvatarUrl && { avatar: newAvatarUrl }) };
+
+        await setDoc(doc(db, 'users', updatedUser.id), updatedUser, { merge: true });
+        setUser(updatedUser);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, updateProfileData, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

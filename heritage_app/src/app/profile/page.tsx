@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Box, Container, Typography, Avatar, Grid, Paper, Chip, LinearProgress, Stack, Button } from '@mui/material';
-import { ShieldCheck, Award, Star, History, Image as ImageIcon, MessageCircle } from 'lucide-react';
+import { Box, Container, Typography, Avatar, Grid, Paper, Chip, LinearProgress, Stack, Button, CircularProgress } from '@mui/material';
+import { ShieldCheck, Award, Star, History, Image as ImageIcon, MessageCircle, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useHeritage } from '@/theme/HeritageContext';
 import { useAuth } from '@/theme/AuthContext';
@@ -11,8 +11,24 @@ import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
     const { entries, userValidationsGiven } = useHeritage();
-    const { user, logout } = useAuth();
+    const { user, logout, updateProfileData } = useAuth();
     const router = useRouter();
+    const [isUploading, setIsUploading] = React.useState(false);
+
+    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setIsUploading(true);
+            try {
+                // Ignore updateProfileData type error if not recognized by TypeScript yet
+                // @ts-ignore
+                if (updateProfileData) await updateProfileData({}, e.target.files[0]);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setIsUploading(false);
+            }
+        }
+    };
 
     // Derived Gamification Stats
     const userEntries = entries.filter(e => e.author.name === (user?.username || 'You (Heritage Guardian)'));
@@ -40,8 +56,24 @@ export default function ProfilePage() {
                             }}>
                                 <Box sx={{ position: 'relative', display: 'inline-block', mb: 3 }}>
                                     <Avatar src={user?.avatar || "https://i.pravatar.cc/150?u=you"} sx={{ width: 120, height: 120, border: '4px solid #6366f1' }} />
+                                    
+                                    <Box 
+                                        component="label" 
+                                        sx={{
+                                            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
+                                            borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            bgcolor: isUploading ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.4)', 
+                                            opacity: isUploading ? 1 : 0, 
+                                            cursor: 'pointer', transition: 'opacity 0.2s',
+                                            '&:hover': { opacity: 1 }
+                                        }}
+                                    >
+                                        <input type="file" hidden accept="image/*" onChange={handlePhotoUpload} disabled={isUploading} />
+                                        {isUploading ? <CircularProgress size={30} sx={{ color: 'white' }} /> : <Camera color="white" />}
+                                    </Box>
+
                                     {badges[0].unlocked && (
-                                        <Box sx={{ position: 'absolute', bottom: 0, right: 0, bgcolor: '#10b981', p: 1, borderRadius: '50%', border: '4px solid #1e293b' }}>
+                                        <Box sx={{ position: 'absolute', bottom: -5, right: -5, bgcolor: '#10b981', p: 1, borderRadius: '50%', border: '4px solid #1e293b', zIndex: 2 }}>
                                             <ShieldCheck size={20} color="white" />
                                         </Box>
                                     )}
