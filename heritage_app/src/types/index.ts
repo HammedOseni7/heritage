@@ -79,3 +79,12 @@ export interface ValidationVote {
     calculatedWeight: number; // Penalty applied (e.g., 0.5 or 1.0)
     createdAt: string;
 }
+export interface HeritageNotification {
+    id: string;
+    entryId: string;
+    title: string;
+    message: string;
+    type: 'pending_verification' | 'system' | 'achievement';
+    isRead: boolean;
+    createdAt: string;
+}

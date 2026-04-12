@@ -4,6 +4,7 @@ import "./globals.css";
 import ThemeRegistry from "@/theme/ThemeRegistry";
 import { AuthProvider } from "@/theme/AuthContext";
 import { HeritageProvider } from "@/theme/HeritageContext";
+import { NotificationProvider } from "@/theme/NotificationContext";
 import MainLayout from "@/components/layout/MainLayout";
 import Chatbot from "@/components/common/Chatbot";
 
@@ -35,8 +36,10 @@ export default function RootLayout({
         <ThemeRegistry>
           <AuthProvider>
             <HeritageProvider>
-              <MainLayout>{children}</MainLayout>
-              <Chatbot />
+              <NotificationProvider>
+                <MainLayout>{children}</MainLayout>
+                <Chatbot />
+              </NotificationProvider>
             </HeritageProvider>
           </AuthProvider>
         </ThemeRegistry>

@@ -5,13 +5,18 @@ import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, Stack,
 import { Globe, PlusCircle, Bell, Menu, Trophy, Search, Home, History, User, X } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/theme/AuthContext';
+import { useNotifications } from '@/theme/NotificationContext';
 import SearchModal from './SearchModal';
+import NotificationsPopover from './NotificationsPopover';
+import { Badge } from '@mui/material';
 
 export default function Header() {
     const { user } = useAuth();
+    const { unreadCount } = useNotifications();
     const [isScrolled, setIsScrolled] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null);
 
     React.useEffect(() => {
         const handleScroll = () => {
@@ -62,7 +67,11 @@ export default function Header() {
                         {user && (
                             <Button component={Link} href="/submit" startIcon={<PlusCircle size={18} />} variant="contained" color="primary" sx={{ borderRadius: 10, fontWeight: 800 }}>Share Heritage</Button>
                         )}
-                        <IconButton color="inherit"><Bell size={20} /></IconButton>
+                        <IconButton color="inherit" onClick={(e) => setNotifAnchor(e.currentTarget)}>
+                            <Badge badgeContent={unreadCount} color="error" sx={{ '& .MuiBadge-badge': { fontWeight: 900, fontSize: '0.6rem' } }}>
+                                <Bell size={20} />
+                            </Badge>
+                        </IconButton>
                         {user ? (
                             <Tooltip title="Your Profile">
                                 <IconButton color="inherit" component={Link} href="/profile">
@@ -156,6 +165,9 @@ export default function Header() {
 
             {/* Global Search Interface */}
             <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+
+            {/* Notifications Interface */}
+            <NotificationsPopover anchorEl={notifAnchor} onClose={() => setNotifAnchor(null)} />
         </AppBar>
     );
 }
