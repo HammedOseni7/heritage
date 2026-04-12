@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Box, Container, Typography, Avatar, Grid, Paper, Chip, LinearProgress, Stack, Button, CircularProgress } from '@mui/material';
-import { ShieldCheck, Award, Star, History, Image as ImageIcon, MessageCircle, Camera } from 'lucide-react';
+import { Box, Container, Typography, Avatar, Grid, Paper, Chip, LinearProgress, Stack, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton } from '@mui/material';
+import { ShieldCheck, Award, Star, History, Image as ImageIcon, MessageCircle, Camera, Edit2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useHeritage } from '@/theme/HeritageContext';
 import { useAuth } from '@/theme/AuthContext';
@@ -14,6 +14,31 @@ export default function ProfilePage() {
     const { user, logout, updateProfileData } = useAuth();
     const router = useRouter();
     const [isUploading, setIsUploading] = React.useState(false);
+    
+    // Edit Profile State
+    const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+    const [editUsername, setEditUsername] = React.useState('');
+    const [editBio, setEditBio] = React.useState('');
+    const [isSaving, setIsSaving] = React.useState(false);
+
+    const handleOpenEditModal = () => {
+        setEditUsername(user?.username || '');
+        setEditBio(user?.bio || '');
+        setIsEditModalOpen(true);
+    };
+
+    const handleSaveProfile = async () => {
+        setIsSaving(true);
+        try {
+            // @ts-ignore
+            if (updateProfileData) await updateProfileData({ username: editUsername, bio: editBio });
+            setIsEditModalOpen(false);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -78,8 +103,19 @@ export default function ProfilePage() {
                                         </Box>
                                     )}
                                 </Box>
-                                <Typography variant="h5" sx={{ fontWeight: 900, mb: 0.5 }}>{user?.username || 'You'}</Typography>
-                                <Typography variant="body2" sx={{ color: '#818cf8', fontWeight: 700, mb: 4 }}>Heritage Guardian</Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 900 }}>{user?.username || 'You'}</Typography>
+                                    <IconButton size="small" onClick={handleOpenEditModal} sx={{ color: 'rgba(255,255,255,0.5)', '&:hover': { color: 'white' } }}>
+                                        <Edit2 size={16} />
+                                    </IconButton>
+                                </Box>
+                                <Typography variant="body2" sx={{ color: '#818cf8', fontWeight: 700, mb: 2 }}>Heritage Guardian</Typography>
+                                {user?.bio && (
+                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 4, px: 2, fontStyle: 'italic' }}>
+                                        "{user.bio}"
+                                    </Typography>
+                                )}
+                                {!user?.bio && <Box sx={{ mb: 4 }} />}
 
                                 <Box sx={{ textAlign: 'left', mb: 4, p: 3, bgcolor: 'rgba(0,0,0,0.2)', borderRadius: 4 }}>
                                     <Typography variant="overline" sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 800 }}>Impact Score</Typography>
@@ -178,6 +214,50 @@ export default function ProfilePage() {
                     </Box>
                 </Box>
             </Container>
+
+            {/* Edit Profile Dialog */}
+            <Dialog 
+                open={isEditModalOpen} 
+                onClose={() => !isSaving && setIsEditModalOpen(false)}
+                PaperProps={{
+                    sx: { bgcolor: '#0f172a', color: 'white', borderRadius: 3, border: '1px solid rgba(255,255,255,0.1)', minWidth: { xs: 300, sm: 400 } }
+                }}
+            >
+                <DialogTitle sx={{ fontWeight: 800 }}>Edit Profile</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Username"
+                        type="text"
+                        fullWidth
+                        variant="outlined"
+                        value={editUsername}
+                        onChange={(e) => setEditUsername(e.target.value)}
+                        disabled={isSaving}
+                        sx={{ mb: 3, mt: 1, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: '#6366f1' }, '&.Mui-focused fieldset': { borderColor: '#6366f1' }, color: 'white' }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.5)' } }}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Bio"
+                        type="text"
+                        fullWidth
+                        variant="outlined"
+                        multiline
+                        rows={3}
+                        value={editBio}
+                        onChange={(e) => setEditBio(e.target.value)}
+                        disabled={isSaving}
+                        sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }, '&:hover fieldset': { borderColor: '#6366f1' }, '&.Mui-focused fieldset': { borderColor: '#6366f1' }, color: 'white' }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.5)' } }}
+                    />
+                </DialogContent>
+                <DialogActions sx={{ p: 3, pt: 0 }}>
+                    <Button onClick={() => setIsEditModalOpen(false)} disabled={isSaving} sx={{ color: 'rgba(255,255,255,0.5)' }}>Cancel</Button>
+                    <Button onClick={handleSaveProfile} variant="contained" disabled={isSaving || !editUsername.trim()} sx={{ bgcolor: '#6366f1', '&:hover': { bgcolor: '#4f46e5' }, fontWeight: 700, borderRadius: 2 }}>
+                        {isSaving ? <CircularProgress size={24} color="inherit" /> : 'Save Changes'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }
