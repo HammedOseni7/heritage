@@ -26,7 +26,7 @@ const steps = [
     },
     {
         title: 'Submit for Review',
-        description: 'Upload your entry. Our community of guardians will verify the authenticity of the content.',
+        description: 'Upload your entry. Our community of guardians will verify the authenticity of the content. Note: Your entry requires 5 verifications from the community to be moved from pending to fully verified.',
         icon: <Upload size={24} color="#10b981" />,
         color: '#10b981'
     }
