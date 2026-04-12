@@ -5,6 +5,7 @@ import { CulturalEntry } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHeritage } from '@/theme/HeritageContext';
 import ArtifactViewer from './ArtifactViewer';
+import { useRouter } from 'next/navigation';
 
 interface CultureCardProps {
     entry: CulturalEntry;
@@ -29,6 +30,7 @@ export default function CultureCard({ entry }: CultureCardProps) {
 
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const router = useRouter();
 
     const toggleAudio = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -44,10 +46,7 @@ export default function CultureCard({ entry }: CultureCardProps) {
 
     const handleValidate = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!hasValidated && !hasInvalidated) {
-            validateEntry(entry.id);
-            setHasValidated(true);
-        }
+        router.push(`/review/${entry.id}`);
     };
 
     const handleInvalidate = (e: React.MouseEvent) => {
