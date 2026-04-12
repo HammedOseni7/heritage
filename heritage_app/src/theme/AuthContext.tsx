@@ -11,6 +11,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { optimizeImage } from '@/lib/imageOptimization';
 
 export interface UserProfile {
     id: string;
@@ -123,8 +124,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Upload DP to Imgbb if provided
         let avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`;
         if (avatarFile) {
+            const optimizedFile = await optimizeImage(avatarFile);
             const formData = new FormData();
-            formData.append('image', avatarFile);
+            formData.append('image', optimizedFile);
             const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
             
             try {
@@ -172,8 +174,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let avatarUrl = user.avatar;
         
         if (avatarFile) {
+            const optimizedFile = await optimizeImage(avatarFile);
             const formData = new FormData();
-            formData.append('image', avatarFile);
+            formData.append('image', optimizedFile);
             const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
             try {
                 const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {

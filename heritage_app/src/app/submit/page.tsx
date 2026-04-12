@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Grid from '@mui/material/Grid';
-import { Container, Typography, Box, TextField, Button, MenuItem, Paper, Stepper, Step, StepLabel, Stack, Avatar } from '@mui/material';
-import { Share2, MapPin, CheckCircle2, Info } from 'lucide-react';
+import { Container, Typography, Box, TextField, Button, MenuItem, Paper, Stepper, Step, StepLabel, Stack, Avatar, IconButton } from '@mui/material';
+import { Share2, MapPin, CheckCircle2, Info, Image as ImageIcon, X, Loader2, Camera } from 'lucide-react';
+import { optimizeImages } from '@/lib/imageOptimization';
 import { CultureType } from '@/types';
 
 import Link from 'next/link';
@@ -35,17 +36,67 @@ export default function SubmitPage() {
         language: '',
         region: ''
     });
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [isUploadingImages, setIsUploadingImages] = useState(false);
+    const [previews, setPreviews] = useState<string[]>([]);
 
     const handleNext = () => setActiveStep((prev) => prev + 1);
     const handleBack = () => setActiveStep((prev) => prev - 1);
 
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const filesArray = Array.from(e.target.files);
+            setSelectedFiles((prev) => [...prev, ...filesArray]);
+            
+            const newPreviews = filesArray.map(file => URL.createObjectURL(file));
+            setPreviews((prev) => [...prev, ...newPreviews]);
+        }
+    };
+
+    const removeFile = (index: number) => {
+        URL.revokeObjectURL(previews[index]);
+        setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+        setPreviews((prev) => prev.filter((_, i) => i !== index));
+    };
+
     const handleSubmit = async () => {
+        setIsUploadingImages(true);
         try {
+            const imageUrls: string[] = [];
+            
+            if (selectedFiles.length > 0) {
+                // 1. Optimize images
+                const optimizedFiles = await optimizeImages(selectedFiles);
+                
+                // 2. Upload to ImgBB
+                const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+                
+                for (const file of optimizedFiles) {
+                    const formDataUpload = new FormData();
+                    formDataUpload.append('image', file);
+                    
+                    try {
+                        const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+                            method: 'POST',
+                            body: formDataUpload,
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            imageUrls.push(data.data.url);
+                        }
+                    } catch (err) {
+                        console.error('Image upload failed:', err);
+                    }
+                }
+            }
+
+            // 3. Add entry with image URLs
             await addEntry({
                 title: formData.title,
                 type: formData.type as any,
                 description: formData.description,
                 content: formData.content,
+                images: imageUrls,
                 metadata: {
                     tribe: formData.tribe,
                     language: formData.language,
@@ -59,11 +110,11 @@ export default function SubmitPage() {
                 }
             });
 
-            // Simulation of submission
-            await new Promise(resolve => setTimeout(resolve, 600));
             setIsSubmitted(true);
         } catch (error) {
             console.error('Submission failed:', error);
+        } finally {
+            setIsUploadingImages(false);
         }
     };
 
@@ -172,6 +223,53 @@ export default function SubmitPage() {
                             value={formData.content}
                             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                         />
+
+                        <Box sx={{ mt: 2 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <ImageIcon size={18} /> Documentation & Photos
+                            </Typography>
+                            
+                            <Grid container spacing={2}>
+                                {previews.map((url, i) => (
+                                    <Grid key={i} size={{ xs: 6, sm: 3 }}>
+                                        <Box sx={{ position: 'relative', pt: '100%', borderRadius: 2, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                            <img src={url} alt="Preview" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <IconButton 
+                                                size="small" 
+                                                onClick={() => removeFile(i)}
+                                                sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'rgba(0,0,0,0.5)', color: 'white', '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' } }}
+                                            >
+                                                <X size={14} />
+                                            </IconButton>
+                                        </Box>
+                                    </Grid>
+                                ))}
+                                <Grid size={{ xs: 12, sm: 3 }}>
+                                    <Box 
+                                        component="label"
+                                        sx={{ 
+                                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                            height: 140, position: 'relative', borderRadius: 4, cursor: 'pointer',
+                                            border: '2px dashed rgba(99, 102, 241, 0.4)', 
+                                            bgcolor: 'rgba(99, 102, 241, 0.05)',
+                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
+                                            '&:hover': { 
+                                                bgcolor: 'rgba(99, 102, 241, 0.1)', 
+                                                borderColor: 'primary.main',
+                                                transform: 'scale(1.02)'
+                                            }
+                                        }}
+                                    >
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Camera size={32} color="#818cf8" strokeWidth={1.5} />
+                                            <Typography variant="body2" sx={{ mt: 1, color: '#a5b4fc', fontWeight: 700 }}>Add Photos</Typography>
+                                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem' }}>Optimized Upload</Typography>
+                                        </Box>
+                                        <input type="file" hidden multiple accept="image/*" onChange={handleFileSelect} />
+                                    </Box>
+                                </Grid>
+                            </Grid>
+                        </Box>
                     </Stack>
                 )}
 
@@ -234,7 +332,16 @@ export default function SubmitPage() {
                     {activeStep < 2 ? (
                         <Button variant="contained" onClick={handleNext} sx={{ px: 4, borderRadius: 10 }}>Next Step</Button>
                     ) : (
-                        <Button variant="contained" onClick={handleSubmit} startIcon={<CheckCircle2 />} color="primary" sx={{ px: 4, borderRadius: 10 }}>Submit Heritage</Button>
+                        <Button 
+                            variant="contained" 
+                            onClick={handleSubmit} 
+                            disabled={isUploadingImages}
+                            startIcon={isUploadingImages ? <Loader2 className="animate-spin" /> : <CheckCircle2 />} 
+                            color="primary" 
+                            sx={{ px: 4, borderRadius: 10 }}
+                        >
+                            {isUploadingImages ? 'Processing...' : 'Submit Heritage'}
+                        </Button>
                     )}
                 </Box>
             </Paper>
