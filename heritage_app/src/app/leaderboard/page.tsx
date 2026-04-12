@@ -1,5 +1,7 @@
 'use client';
 
+import React, { useState, useMemo, useEffect } from 'react';
+import { Box, Container, Typography, Avatar, Paper, Stack, IconButton, Tabs, Tab } from '@mui/material';
 import { Trophy, Medal, MapPin, ChevronRight, TrendingUp, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHeritage } from '@/theme/HeritageContext';
