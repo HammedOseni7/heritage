@@ -100,6 +100,9 @@ export default function CultureCard({ entry }: CultureCardProps) {
         const isCommunityVerified = entry.status === 'Community Verified' || entry.isValidated === true || (entry.validationCount && entry.validationCount >= 5);
         const isPending = !isCommunityVerified && entry.status !== 'Needs Revision';
 
+        const hasMedia = (entry.images && entry.images.length > 0) || entry.videoUrl;
+        const pendingLabel = hasMedia ? "Pending" : "Pending (No Image)";
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -138,7 +141,7 @@ export default function CultureCard({ entry }: CultureCardProps) {
                         <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 1 }}>
                             {entry.isElderVerified && <Chip icon={<Award size={14} color="#fbbf24" />} label="Elder Verified" sx={{ bgcolor: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', fontWeight: 900, fontSize: '0.65rem', backdropFilter: 'blur(10px)', border: '1px solid rgba(251, 191, 36, 0.3)', textTransform: 'uppercase' }} />}
                             {isCommunityVerified && <Chip icon={<ShieldCheck size={14} color="#10b981" />} label="Verified" sx={{ bgcolor: 'rgba(16, 185, 129, 0.2)', color: '#34d399', fontWeight: 900, fontSize: '0.65rem', backdropFilter: 'blur(10px)', border: '1px solid rgba(16, 185, 129, 0.3)', textTransform: 'uppercase' }} />}
-                            {isPending && <Chip icon={<ShieldAlert size={14} color="#f43f5e" />} label="Pending" sx={{ bgcolor: 'rgba(244, 63, 94, 0.1)', color: '#fb7185', fontWeight: 900, fontSize: '0.65rem', backdropFilter: 'blur(10px)', border: '1px solid rgba(244, 63, 94, 0.2)', textTransform: 'uppercase' }} />}
+                            {isPending && <Chip icon={<ShieldAlert size={14} color={hasMedia ? "#f43f5e" : "#f59e0b"} />} label={pendingLabel} sx={{ bgcolor: hasMedia ? 'rgba(244, 63, 94, 0.1)' : 'rgba(245, 158, 11, 0.15)', color: hasMedia ? '#fb7185' : '#fbbf24', fontWeight: 900, fontSize: '0.65rem', backdropFilter: 'blur(10px)', border: hasMedia ? '1px solid rgba(244, 63, 94, 0.2)' : '1px solid rgba(245, 158, 11, 0.3)', textTransform: 'uppercase' }} />}
                         </Box>
                     </Box>
                 ) : entry.images && entry.images.length > 0 ? (
@@ -195,15 +198,15 @@ export default function CultureCard({ entry }: CultureCardProps) {
                                  {isPending && (
                                      <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
                                          <Chip
-                                             icon={<ShieldAlert size={14} color="#f43f5e" />}
-                                             label="Pending"
+                                             icon={<ShieldAlert size={14} color={hasMedia ? "#f43f5e" : "#f59e0b"} />}
+                                             label={pendingLabel}
                                              sx={{
-                                                 bgcolor: 'rgba(244, 63, 94, 0.1)',
-                                                 color: '#fb7185',
+                                                 bgcolor: hasMedia ? 'rgba(244, 63, 94, 0.1)' : 'rgba(245, 158, 11, 0.15)',
+                                                 color: hasMedia ? '#fb7185' : '#fbbf24',
                                                  fontWeight: 900,
                                                  fontSize: '0.65rem',
                                                  backdropFilter: 'blur(10px)',
-                                                 border: '1px solid rgba(244, 63, 94, 0.2)',
+                                                 border: hasMedia ? '1px solid rgba(244, 63, 94, 0.2)' : '1px solid rgba(245, 158, 11, 0.3)',
                                                  textTransform: 'uppercase'
                                              }}
                                          />
@@ -234,7 +237,18 @@ export default function CultureCard({ entry }: CultureCardProps) {
                             )}
                         </Box>
                     </Box>
-                ) : null}
+                ) : (
+                    <Box sx={{ height: 160, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 1 }}>
+                            {entry.isElderVerified && <Chip icon={<Award size={14} color="#fbbf24" />} label="Elder Verified" sx={{ bgcolor: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', fontWeight: 900, fontSize: '0.65rem', backdropFilter: 'blur(10px)' }} />}
+                            {isPending && <Chip icon={<ShieldAlert size={14} color="#f59e0b" />} label="Pending (No Image)" sx={{ bgcolor: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', fontWeight: 900, fontSize: '0.65rem', backdropFilter: 'blur(10px)', border: '1px solid rgba(245, 158, 11, 0.3)', textTransform: 'uppercase' }} />}
+                        </Box>
+                        <Stack alignItems="center" spacing={1} sx={{ opacity: 0.3 }}>
+                            <BoxIcon size={40} color="white" />
+                            <Typography variant="caption" sx={{ color: 'white', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>Visuals Missing</Typography>
+                        </Stack>
+                    </Box>
+                )}
                 <CardContent sx={{ p: 4 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                         <Box>
